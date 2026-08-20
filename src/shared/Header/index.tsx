@@ -8,16 +8,16 @@ export const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false)
     return (
         <header className={`${styles.header} ${menuOpen ? styles.grow : ""}`}>
-            <div className={styles.overlay}></div>
+            
             <div className={styles.logoSection}>
                 <Link to="/" className={styles.imageContainer}>
                     <img src="/assets/logoUDC_normal.png" alt="Logo UDC" />
                 </Link>
-
-                <div className={`${styles.logoDescription} ${menuOpen ? styles.hidden : ""}`}>
+                {/*<div className={`${styles.logoDescription} ${menuOpen ? styles.hidden : ""}`}>
                     <h1>AcademiCORE</h1>
                     <p>Sistema de información académica</p>
-                </div>
+                </div>*/}
+                
             </div>
 
 
@@ -59,9 +59,10 @@ export const Header = () => {
             </nav>
 
             <Link className={`${styles.loginButton}`} to="/iniciarSesion">
-
-                <img src="" alt="" />
                 <span>Iniciar sesión</span>
+                <div className={styles.arrowContainer}>
+                    <img src="/assets/arrow.png" alt="" />
+                </div>
             </Link>
             <button
                 className={`${styles.menuButton} ${menuOpen ? styles.active : ""}`}
