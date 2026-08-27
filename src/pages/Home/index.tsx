@@ -4,7 +4,7 @@ import styles from "./index.module.css"
 
 export const Home = () => {
 
-    const services = [
+    {/* const services = [
         {
             id: 1,
             title: "Pago en línea",
@@ -27,7 +27,7 @@ export const Home = () => {
             img: "/assets/announcement.png"
         }
     ];
-    console.log(services)
+    console.log(services)*/}
     return (
         <div className={styles.homeContainer}>
             <h1>ACADEMI<span className={styles.highlight}>CORE</span></h1>
