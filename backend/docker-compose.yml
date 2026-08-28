@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: academicore-db
+    environment:
+      POSTGRES_DB: academicore
+      POSTGRES_USER: academicore
+      POSTGRES_PASSWORD: academicore_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U academicore -d academicore"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - academicore-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: academicore-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/academicore
+      SPRING_DATASOURCE_USERNAME: academicore
+      SPRING_DATASOURCE_PASSWORD: academicore_dev
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    networks:
+      - academicore-net
+
+networks:
+  academicore-net:
+    driver: bridge
+
+volumes:
+  pgdata:

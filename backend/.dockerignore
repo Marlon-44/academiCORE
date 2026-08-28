@@ -1,0 +1,13 @@
+# Evita que el .jar copiado por el builder se sincronice al host
+target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
