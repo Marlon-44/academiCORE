@@ -1,10 +1,10 @@
 .guiasSection {
-    width: 100%;
-    padding: 100px 0;
+    width: 80%;
+    margin: 2rem auto;
 }
 
 .container {
-    width: 80%;
+    
     margin: 0 auto;
 
     display: grid;

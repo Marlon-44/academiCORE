@@ -1,4 +1,5 @@
 import { Banner2 } from "../../shared/Banner2"
+import { CampusSection } from "../Campus";
 import { AnunciosSection } from "./components/AnunciosSection";
 import { GuiasSection } from "./components/GuiasSection";
 import styles from "./index.module.css"
@@ -35,6 +36,7 @@ export const Home = () => {
             <Banner2 />
             <AnunciosSection />
             <GuiasSection />
+            <CampusSection/>
         </div>
     )
 }
