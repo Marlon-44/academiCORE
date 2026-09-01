@@ -1,5 +1,6 @@
 import { Banner2 } from "../../shared/Banner2"
-import { Title } from "../../shared/Title";
+import { AnunciosSection } from "./components/AnunciosSection";
+import { GuiasSection } from "./components/GuiasSection";
 import styles from "./index.module.css"
 
 export const Home = () => {
@@ -32,8 +33,8 @@ export const Home = () => {
         <div className={styles.homeContainer}>
             <h1>ACADEMI<span className={styles.highlight}>CORE</span></h1>
             <Banner2 />
-            <Title title="Descrubre nuestros servicios" />
-
+            <AnunciosSection />
+            <GuiasSection />
         </div>
     )
 }
