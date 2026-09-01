@@ -43,7 +43,7 @@ const anuncios: Anuncio[] = [
     },
 ];
 
-const colors =["var(--uc-teal)", "var(--uc-blue-dark)", "var(--uc-red)"];
+const colors =["var(--uc-blue-dark)", "var(--uc-teal)", "var(--uc-red)"];
 export const AnunciosSection = () => {
     const anuncioPrincipal = anuncios[0];
     const anunciosSecundarios = anuncios.slice(1);

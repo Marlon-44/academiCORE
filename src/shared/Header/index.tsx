@@ -49,7 +49,7 @@ export const Header = () => {
                     <li >
                         <Link to="/ayuda" className={`${styles.headerLink} `} >
 
-                            <span>Plataforma Acad[emica</span>
+                            <span>Plataforma Académica</span>
                             
                         </Link>
                     </li>
