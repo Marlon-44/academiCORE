@@ -30,22 +30,27 @@ export const Header = () => {
                     </li>
 
                     <li>
-                        <Link to="/estudiantes" className={styles.headerLink}>
-                            Estudiantes
+                        <Link to="/inscripciones" className={styles.headerLink}>
+                            Inscripciones
                         </Link>
                     </li>
 
                     <li>
-                        <Link to="/docentes" className={styles.headerLink}>
-                            Docentes
+                        <Link to="/admisiones" className={styles.headerLink}>
+                            Admisiones
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admisiones" className={styles.headerLink}>
+                            Resultados
                         </Link>
                     </li>
 
                     <li >
-                        <Link to="/ayuda" className={`${styles.headerLink} ${styles.doubleLink}`} >
+                        <Link to="/ayuda" className={`${styles.headerLink} `} >
 
-                            <span>Ayuda</span>
-                            <img src="/assets/help.png" alt="Icono de ayuda" />
+                            <span>Plataforma Acad[emica</span>
+                            
                         </Link>
                     </li>
                     <li>

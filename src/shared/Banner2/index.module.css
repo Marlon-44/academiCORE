@@ -1,30 +1,29 @@
-.container{
+.container {
     width: 95%;
     margin: auto;
     height: 75vh;
-    background:
-        radial-gradient(circle at 15% 25%, #ffd000 0%, transparent 30%),
-        radial-gradient(circle at 75% 20%, #ff9f1c 0%, transparent 28%),
-        radial-gradient(circle at 55% 75%, #ffb703 0%, transparent 32%),
-        radial-gradient(circle at 20% 80%, #ff5e3a 0%, transparent 30%),
-        radial-gradient(circle at 85% 75%, #ffcc00 0%, transparent 25%),
-        radial-gradient(circle at 45% 40%, #ff8c00 0%, transparent 35%);
+    background: radial-gradient(circle at 50% 50%,
+            var(--uc-navy) 0%,
+            var(--uc-blue-dark) 100%);
     display: flex;
     align-items: flex-end;
     border-radius: 3rem;
     padding: 0 5rem;
-    
+
 }
 
-.container img{
+.container img {
     height: 140%;
     position: relative;
 }
-.container h3,p{
+
+.container h3,
+p {
     margin-bottom: 3rem;
     color: #fff;
     width: 40%;
 }
-.container h3{
+
+.container h3 {
     font-size: 2.2rem;
 }
