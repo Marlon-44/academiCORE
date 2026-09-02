@@ -1,0 +1,41 @@
+
+.dashboard {
+    min-height: 100vh;
+    padding: 140px 24px;
+    background: #f8f7fa;
+}
+
+.container {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+}
+
+.eyebrow {
+    color: #66ad9e;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+}
+
+.container h1 {
+    max-width: 750px;
+    margin: 15px 0;
+
+    color: #0b142f;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+}
+
+.container h1 span {
+    color: #4b317a;
+}
+
+.container p {
+    max-width: 600px;
+
+    color: #707582;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
