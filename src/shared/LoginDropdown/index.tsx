@@ -76,7 +76,8 @@ export const LoginDropdown = ({
 
     const isFormValid = isUsernameValid && isPasswordValid;
 
-    const handleSubmit = async (event: SubmitEvent) => {
+    const handleSubmit: React.SubmitEventHandler<HTMLFormElement> = async (
+    event) => {
         event.preventDefault();
 
         if (!isFormValid || isLoading) {
