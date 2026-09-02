@@ -1,10 +1,9 @@
+import { useEffect, useRef, useState } from "react";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
 import styles from "./index.module.css";
 import { useAuth } from "../../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeClosed, Lock } from "lucide-react";
-
 interface LoginDropdownProps {
     isOpen: boolean;
     onClose: () => void;
@@ -67,14 +66,6 @@ export const LoginDropdown = ({
         };
     }, [isOpen, onClose]);
 
-    /*
-     * Limpiar errores al modificar los campos.
-     */
-    useEffect(() => {
-        if (error) {
-            setError("");
-        }
-    }, [username, password]);
 
     if (!isOpen) {
         return null;
@@ -85,7 +76,7 @@ export const LoginDropdown = ({
 
     const isFormValid = isUsernameValid && isPasswordValid;
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: SubmitEvent) => {
         event.preventDefault();
 
         if (!isFormValid || isLoading) {
@@ -123,7 +114,7 @@ export const LoginDropdown = ({
             });
 
             onClose();
-            navigate("/student-dashboard",{
+            navigate("/student-dashboard", {
                 replace: true,
             });
         } catch {
@@ -185,9 +176,10 @@ export const LoginDropdown = ({
                         name="username"
                         type="text"
                         value={username}
-                        onChange={(event) =>
-                            setUsername(event.target.value)
-                        }
+                        onChange={(event) => {
+                            setUsername(event.target.value);
+                            setError("");
+                        }}
                         placeholder="Ingresa tu usuario"
                         autoComplete="username"
                         maxLength={100}
@@ -219,9 +211,10 @@ export const LoginDropdown = ({
                             name="password"
                             type={showPassword ? "text" : "password"}
                             value={password}
-                            onChange={(event) =>
-                                setPassword(event.target.value)
-                            }
+                            onChange={(event) => {
+                                setPassword(event.target.value);
+                                setError("");
+                            }}
                             placeholder="Ingresa tu contraseña"
                             autoComplete="current-password"
                             maxLength={128}
