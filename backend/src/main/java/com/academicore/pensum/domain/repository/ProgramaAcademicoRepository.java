@@ -17,6 +17,8 @@ public interface ProgramaAcademicoRepository {
 
     List<ProgramaAcademico> findByFacultadId(Long facultadId);
 
+    List<ProgramaAcademico> findAll();
+
     boolean existsByFacultadIdAndCodigoInterno(Long facultadId, String codigoInterno);
 
     boolean existsByCodigoSnies(String codigoSnies);

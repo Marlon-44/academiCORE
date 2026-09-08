@@ -31,6 +31,8 @@ services:
       SPRING_DATASOURCE_USERNAME: academicore
       SPRING_DATASOURCE_PASSWORD: academicore_dev
       SPRING_PROFILES_ACTIVE: docker
+      SUPABASE_URL: https://pxfitbmwillrxxbjlhjv.supabase.co
+      SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4Zml0Ym13aWxscnh4YmpsaGp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODgxNjA1MiwiZXhwIjoyMTA0MzkyMDUyfQ.PaY_Vdlnmw_RzYkFWu_PWzpSS7tNBzp2qb3lDyn8F3I
     ports:
       - "8080:8080"
     networks:

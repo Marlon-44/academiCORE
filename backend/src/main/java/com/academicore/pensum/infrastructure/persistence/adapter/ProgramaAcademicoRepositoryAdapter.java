@@ -46,6 +46,11 @@ public class ProgramaAcademicoRepositoryAdapter implements ProgramaAcademicoRepo
     }
 
     @Override
+    public List<ProgramaAcademico> findAll() {
+        return jpaRepository.findAll().stream().map(ProgramaAcademicoMapper::toDomain).toList();
+    }
+
+    @Override
     public boolean existsByFacultadIdAndCodigoInterno(Long facultadId, String codigoInterno) {
         return jpaRepository.existsByFacultadIdAndCodigoInterno(facultadId, codigoInterno);
     }

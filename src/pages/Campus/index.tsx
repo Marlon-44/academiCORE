@@ -1,95 +1,60 @@
 
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import styles from "./index.module.css";
+import { fetchCampus, fetchPortadaCampus, type CampusDTO } from "../../services/campusApi";
 
-interface Campus {
+interface CampusCard {
+    id: number;
     name: string;
     description: string;
     image?: string;
     address?: string;
     link?: string;
-    type: "campus" | "tutorial";
 }
-const campusPrincipales: Campus[] = [
-    {
-        name: "Claustro de San Agustín",
-        description:
-            "Sede principal de la Universidad de Cartagena y espacio académico para programas de Ciencias Humanas y Sociales.",
-        address: "Carrera 6 #36-100, Centro",
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRn-MFM6blvtO0RdYES1n3lcrnoKs9SF4TUB3vxdq7yb3iVuNwP1alR05I&s=10",
-        type: "campus",
-        link: "http://localizacion.unicartagena.edu.co/",
-    },
-    {
-        name: "Piedra de Bolívar",
-        description:
-            "Campus que alberga programas administrativos, ingenierías y diferentes facultades de la Universidad.",
-        address: " #Calle 30 No. 48 152",
-        image: "https://unicartagena.edu.co/images/landings/aspirantes/galeria-aspirantes/Campus-Piedra-de-Bolivar.jpg",
-        type: "campus",
-        link: "http://localizacion.unicartagena.edu.co/",
-    },
-    {
-        name: "Campus de San Pablo",
-        description:
-            "Espacio para programas como Química, Física, Biología y Matemáticas, con laboratorios y áreas de investigación.",
-        address: "Carrera 50 #24-120, Zaragocilla",
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQ35EEImhzKOZljsOZbSMKFb2ooFI1zmXNG7tnga0tbBkV716lVQov3WYs&s=10",
-        type: "campus",
-        link: "http://localizacion.unicartagena.edu.co/",
-    },
-    {
-        name: "Zaragocilla - Campus de la Salud",
-        description:
-            "Campus especializado para la formación en el área de la salud, con espacios médicos y laboratorios.",
-        address: "Campus de la Salud, Zaragocilla",
-        image: "https://eventario.co/wp-content/uploads/2026/04/universidad-de-cartagena-campus-de-zaragocilla-1-768x512.jpg",
-        type: "campus",
-        link: "http://localizacion.unicartagena.edu.co/",
-    },
-    {
-        name: "Claustro de La Merced",
-        description: "Espacio histórico ubicado en el Centro, donde funcionan unidades administrativas y programas de posgrado.",
-        address: "Carrera 4 #38-40, Centro",
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfZj_5mVhOYm915Ve6eRqQOZ_lkIKXQtFt-TvAPhDl46YwYGUNm9qPqB1v&s=10",
-        type: "campus",
-        link: "http://localizacion.unicartagena.edu.co/",
-    },
-];
-const centrosTutoriales: Campus[] = [
-    {
-        name: "El Carmen de Bolívar",
-        description: "Centro Tutorial de la Universidad de Cartagena.",
-        type: "tutorial",
-    },
-    {
-        name: "Magangué",
-        description: "Campus Montecarlos y Campus Camilo Torres.",
-        type: "tutorial",
-    },
-    {
-        name: "Cereté",
-        description: "Centro Tutorial de la Universidad de Cartagena.",
-        type: "tutorial",
-    },
-    {
-        name: "Lorica",
-        description: "Centro Tutorial de la Universidad de Cartagena.",
-        type: "tutorial",
-    },
-    {
-        name: "San Juan Nepomuceno",
-        description: "Centro Tutorial de la Universidad de Cartagena.",
-        type: "tutorial",
-    },
-    {
-        name: "Santa Cruz de Mompós",
-        description: "Centro Tutorial de la Universidad de Cartagena.",
-        type: "tutorial",
-    },
+
+const centrosTutoriales = [
+    { name: "El Carmen de Bolívar", description: "Centro Tutorial de la Universidad de Cartagena." },
+    { name: "Magangué", description: "Campus Montecarlos y Campus Camilo Torres." },
+    { name: "Cereté", description: "Centro Tutorial de la Universidad de Cartagena." },
+    { name: "Lorica", description: "Centro Tutorial de la Universidad de Cartagena." },
+    { name: "San Juan Nepomuceno", description: "Centro Tutorial de la Universidad de Cartagena." },
+    { name: "Santa Cruz de Mompós", description: "Centro Tutorial de la Universidad de Cartagena." },
 ];
 
 export const CampusSection = () => {
+    const [campusList, setCampusList] = useState<CampusCard[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadCampus = async () => {
+            try {
+                const campus: CampusDTO[] = await fetchCampus();
+                const sorted = [...campus].sort((a, b) => a.orden - b.orden);
+
+                const cards = await Promise.all(
+                    sorted.map(async (c) => {
+                        const portadaUrl = await fetchPortadaCampus(c.id);
+                        return {
+                            id: c.id,
+                            name: c.nombre,
+                            description: c.descripcion,
+                            image: portadaUrl ?? undefined,
+                            address: c.direccion,
+                            link: c.urlMapa,
+                        } as CampusCard;
+                    })
+                );
+                setCampusList(cards);
+            } catch (err) {
+                console.error("Error cargando campus:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadCampus();
+    }, []);
+
     return (
         <section className={styles.campusSection} id="campus">
             <div className={styles.container}>
@@ -106,14 +71,19 @@ export const CampusSection = () => {
                     </p>
                 </div>
 
+                {loading ? (
+                    <p style={{ textAlign: "center", padding: "60px 0", color: "#888" }}>
+                        Cargando campus...
+                    </p>
+                ) : (
                 <div className={styles.campusGrid}>
-                    {campusPrincipales.map((campus, index) => (
+                    {campusList.map((campus, index) => (
                         <a
-                            key={campus.name}
+                            key={campus.id}
                             href={campus.link}
                             target="_blank"
                             rel="noreferrer"
-                            className={`${styles.campusCard} ${index == 4 ? styles.featured : ''}`}
+                            className={`${styles.campusCard} ${index === campusList.length - 1 ? styles.featured : ''}`}
                         >
                             <div className={styles.imageWrapper}>
                                 {campus.image && (
@@ -157,6 +127,7 @@ export const CampusSection = () => {
                         </a>
                     ))}
                 </div>
+                )}
 
                 <div className={styles.tutorialSection}>
                     <div className={styles.tutorialHeader}>
