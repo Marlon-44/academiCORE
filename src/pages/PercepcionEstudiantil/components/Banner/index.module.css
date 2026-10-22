@@ -103,8 +103,22 @@
     }
 
 
-    .heroDescription {
-        display: none;
+    
+    .logo{
+        left: 60%;
+        bottom: 0.8rem;
+        width: 80%;
+        top:10%;
+        opacity: 0.09;
+    }
+    .heroContent h1{
+        font-size: 1.5rem;
+    }
+    .heroHi{
+        font-size: 1.2rem;
+    }
+    .heroDescription{
+        font-size: 0.9rem;
     }
 
 

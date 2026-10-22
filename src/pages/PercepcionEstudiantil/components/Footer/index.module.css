@@ -19,7 +19,6 @@
 @media (max-width: 700px) {
     .pageFooter {
         width: 100%;
-        background: var(--uc-blue-dark-pastel, #4b317ac2);
         margin-bottom: 1rem;
     }
     .pageFooter p {
