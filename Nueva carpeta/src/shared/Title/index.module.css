@@ -1,0 +1,60 @@
+/* =========================
+    HEADER
+========================= */
+
+.header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 32px;
+}
+
+.eyebrow {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #536dfe;
+}
+
+.header h2 {
+    max-width: 700px;
+    margin: 0;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.1;
+    font-weight: 700;
+    color: #151515;
+}
+
+.header p {
+    max-width: 620px;
+    margin: 14px 0 0;
+    color: #707070;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.viewAll {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    background: transparent;
+    color: #536dfe;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.viewAll span {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.viewAll:hover span {
+    transform: translateX(4px);
+}

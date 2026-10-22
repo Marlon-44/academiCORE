@@ -1,0 +1,328 @@
+
+
+
+.teacherCard {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 260px;
+    padding: 22px;
+    border: 1px solid #eae7f0;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(26, 20, 43, 0.025);
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.teacherCard:hover {
+    transform: translateY(-3px);
+    border-color: #d5c8e9;
+    box-shadow: 0 12px 25px rgba(55, 35, 90, 0.08);
+}
+
+.completedCard {
+    border-color: #e6eee9;
+}
+
+.cardTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.teacherAvatar {
+    display: grid;
+    flex: 0 0 49px;
+    width: 49px;
+    height: 49px;
+    place-items: center;
+    border: 1px solid #e5d9f4;
+    border-radius: 15px;
+    background: #f0eaf8;
+    color: var(--uc-blue-dark, #4b317a);
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    padding: 7px 9px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.statusPending {
+    background: #fff6d7;
+    color: #ebb400;
+}
+
+.statusCompleted {
+    background: #cef5e3b6;
+    color: #088a4d;
+}
+
+.teacherInfo {
+    flex: 1;
+    margin-top: 19px;
+}
+
+.teacherInfo h3 {
+    margin: 0;
+    color: var(--uc-navy, #0b142f);
+    font-size: 1.02rem;
+    font-weight: 750;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.subject {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    color: var(--uc-blue-dark, #4b317a);
+    font-size: 0.85rem;
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.subject svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.program {
+    margin: 7px 0 0;
+    color: var(--font-color-light, #7c7c7c);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.cardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 21px;
+    padding-top: 16px;
+    border-top: 1px solid #f0eef4;
+}
+
+.groupLabel {
+    color: #777181;
+    font-size: 0.77rem;
+    font-weight: 600;
+}
+
+.cardAction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 12px;
+    border: 1px solid var(--uc-blue-dark, #4b317a);
+    border-radius: 9px;
+    background: var(--uc-blue-dark, #4b317a);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.77rem;
+    font-weight: 700;
+    transition:
+        background 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease;
+}
+
+.cardAction:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: #352154;
+    background: #352154;
+}
+
+.cardAction:focus-visible,
+.filterButton:focus-visible,
+.resetButton:focus-visible,
+.clearSearch:focus-visible {
+    outline: 3px solid rgba(102, 173, 158, 0.7);
+    outline-offset: 3px;
+}
+
+.cardActionCompleted,
+.cardActionCompleted:disabled {
+    border-color: transparent;
+    background: #cef5e3b6;
+    color: #088a4d;
+    cursor: default;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 54px 22px;
+    border: 1px dashed #dcd5e8;
+    border-radius: 18px;
+    background: #fff;
+    text-align: center;
+}
+
+.emptyIcon {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    border-radius: 18px;
+    background: #f0ebf7;
+    color: var(--uc-blue-dark, #4b317a);
+}
+
+.emptyState h3 {
+    margin: 18px 0 0;
+    color: var(--uc-navy, #0b142f);
+    font-size: 1.05rem;
+}
+
+.emptyState p {
+    max-width: 390px;
+    margin: 9px 0 19px;
+    color: var(--font-color-light, #7c7c7c);
+    font-size: 0.88rem;
+    line-height: 1.65;
+}
+
+.resetButton {
+    min-height: 42px;
+    padding: 0 15px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--uc-blue-dark, #4b317a);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.resetButton:hover {
+    background: #352154;
+}
+
+.skeletonCard {
+    min-height: 260px;
+    padding: 22px;
+    border: 1px solid #eeeaf3;
+    border-radius: 17px;
+    background: #fff;
+}
+
+.skeletonHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.skeletonAvatar,
+.skeletonBadge,
+.skeletonLine,
+.skeletonLineShort,
+.skeletonButton {
+    display: block;
+    background: linear-gradient(
+        90deg,
+        #f0edf4 25%,
+        #faf9fc 50%,
+        #f0edf4 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease infinite;
+}
+
+.skeletonAvatar {
+    width: 49px;
+    height: 49px;
+    border-radius: 15px;
+}
+
+.skeletonBadge {
+    width: 100px;
+    height: 26px;
+    border-radius: 20px;
+}
+
+.skeletonLine {
+    width: 86%;
+    height: 14px;
+    margin-top: 28px;
+    border-radius: 6px;
+}
+
+.skeletonLineShort {
+    width: 61%;
+    height: 12px;
+    margin-top: 13px;
+    border-radius: 6px;
+}
+
+.skeletonButton {
+    width: 145px;
+    height: 39px;
+    margin-top: 35px;
+    margin-left: auto;
+    border-radius: 9px;
+}
+
+@keyframes shimmer {
+    to {
+        background-position: -200% 0;
+    }
+}
+
+
+
+
+
+
+@media (max-width: 700px) {
+
+    .teacherCard {
+        min-height: 245px;
+        padding: 19px;
+    }
+
+    .cardFooter {
+        align-items: center;
+    }
+
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .teacherCard,
+    .cardAction,
+    .filterButton,
+    .progressFill {
+        transition: none;
+    }
+
+    .skeletonAvatar,
+    .skeletonBadge,
+    .skeletonLine,
+    .skeletonLineShort,
+    .skeletonButton {
+        animation: none;
+    }
+}

@@ -1,0 +1,50 @@
+[
+    {
+        "id": "doc-001",
+        "name": "María Fernanda Rodríguez ",
+        "subject": "Ingeniería de Software",
+        "program": "Ingeniería de Sistemas",
+        "semester": "6",
+        "status": "pending"
+    },
+    {
+        "id": "doc-002",
+        "name": "Carlos Andrés Martínez",
+        "subject": "Bases de Datos",
+        "program": "Ingeniería de Sistemas",
+        "semester": "6",
+        "status": "completed"
+    },
+    {
+        "id": "doc-003",
+        "name": "Laura Camila Pérez",
+        "subject": "Desarrollo Web",
+        "program": "Ingeniería de Sistemas",
+        "semester": "6",
+        "status": "completed"
+    },
+    {
+        "id": "doc-004",
+        "name": "Jorge Enrique Mendoza",
+        "subject": "Matemáticas Discretas",
+        "program": "Ingeniería de Sistemas",
+        "semester": "3",
+        "status": "completed"
+    },
+    {
+        "id": "doc-005",
+        "name": "Diana Carolina Torres",
+        "subject": "Arquitectura de Software",
+        "program": "Ingeniería de Sistemas",
+        "semester": "6",
+        "status": "completed"
+    },
+    {
+        "id": "doc-006",
+        "name": "Andrés Felipe Gómez",
+        "subject": "Estructuras de Datos",
+        "program": "Ingeniería de Sistemas",
+        "semester": "6",
+        "status": "completed"
+    }
+]
