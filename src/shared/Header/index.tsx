@@ -57,8 +57,8 @@ export const Header = () => {
                     </li>
                     <li>
                         <button type="button" onClick={openLogin} className={`${styles.loginButton2}`} aria-expanded={isLoginOpen} aria-haspopup="dialog">
-                            <img src="" alt="" />
-                            <span>Iniciar sesión</span>
+                            
+                            Iniciar sesión
                         </button>
                     </li>
                 </ul>
