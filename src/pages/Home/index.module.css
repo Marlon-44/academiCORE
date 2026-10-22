@@ -18,15 +18,54 @@
     justify-content: space-between;
     height: 200px;
 }
-h1{
+.title{
     font-size:12vw;
     text-align: center;
     font-weight: 600;
+}
+.mobileTitle{
+    display: none;
 }
 
 
 @media (max-width: 748px) {
     .homeContainer{
-        width: 90%;       
+        
+        width: 100%;       
+    }
+    .title{
+        display: none;
+    }
+    .mobileTitle{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        background:  rgb(56, 82, 56);
+        border-radius: 10px;
+        padding:  2rem;
+        height: 200px;
+        width: 80%;
+        margin: auto;
+        position: relative;
+        overflow: hidden;
+    }
+    .mobileTitle img{
+        position: absolute;
+        width: 100%;
+        top: 45%;
+        opacity: 0.3;
+    }
+    .mobileTitle h1{
+        font-size: 7vw;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #fff;
+    }
+    .mobileTitle p{
+        width: 100%;
+        text-align: center;
+        color: #ffffffb6;
+        margin-top: 0.5rem;
     }
 }

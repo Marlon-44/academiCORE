@@ -326,12 +326,20 @@
     .footerLogo {
         width: 165px;
     }
+    .footer{
+        border-radius: 3rem 3rem 0 0;
 
+    }
     .socialSection {
         align-items: flex-start;
         flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
     }
-
+    .socialSection p {
+        width: 100%;
+    }
     .footerBottom {
         align-items: flex-start;
         flex-direction: column;
@@ -350,6 +358,7 @@
 }
 
 @media (max-width: 420px) {
+    
     .footerTop {
         grid-template-columns: 1fr;
     }
