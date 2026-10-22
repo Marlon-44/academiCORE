@@ -40,3 +40,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+
+sentimiento:
+  service-url: ${SENTIMENT_SERVICE_URL:http://localhost:5000}

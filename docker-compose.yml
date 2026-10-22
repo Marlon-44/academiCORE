@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: academicore
       POSTGRES_PASSWORD: academicore_dev
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -33,8 +33,19 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SUPABASE_URL: https://pxfitbmwillrxxbjlhjv.supabase.co
       SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4Zml0Ym13aWxscnh4YmpsaGp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODgxNjA1MiwiZXhwIjoyMTA0MzkyMDUyfQ.PaY_Vdlnmw_RzYkFWu_PWzpSS7tNBzp2qb3lDyn8F3I
+      SENTIMENT_SERVICE_URL: http://sentiment:5000
     ports:
       - "8080:8080"
+    networks:
+      - academicore-net
+
+  sentiment:
+    build:
+      context: ./sentiment-service
+      dockerfile: Dockerfile
+    container_name: academicore-sentiment
+    ports:
+      - "5000:5000"
     networks:
       - academicore-net
 
@@ -46,7 +57,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "3000:80"
+      - "3002:80"
     networks:
       - academicore-net
 

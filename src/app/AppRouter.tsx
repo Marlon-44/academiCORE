@@ -7,6 +7,7 @@ import { AuthProvider } from "../auth/AuthContext";
 import { ProtectedRoute } from "../auth/ProtectedRoute";
 import { PercepcionEstudiantil } from "../pages/PercepcionEstudiantil";
 import { StudentDashboard } from "../pages/StudentDashboard";
+import { EvaluacionDocente } from "../pages/EvaluacionDocente";
 
 export const AppRouter = () => {
     return (
@@ -16,6 +17,10 @@ export const AppRouter = () => {
                     {/* Rutas públicas */}
                     <Route path="/" element={<MainLayout />}>
                         <Route index element={<Home />} />
+                        <Route
+                            path="evaluacion-docente"
+                            element={<EvaluacionDocente />}
+                        />
                     </Route>
 
                     {/* Rutas protegidas por autenticación y estado de encuesta */}
