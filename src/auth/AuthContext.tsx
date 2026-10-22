@@ -8,11 +8,13 @@ import {
     type ReactNode,
 } from "react";
 
+
 interface User {
     id: string;
     username: string;
     name: string;
     role: string;
+    surveyCompleted: boolean;
 }
 
 interface LoginCredentials {
@@ -24,9 +26,10 @@ interface AuthContextValue {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (credentials: LoginCredentials) => Promise<void>;
+    login: (credentials: LoginCredentials) => Promise<User>;
     logout: () => Promise<void>;
     checkSession: () => Promise<void>;
+    completeSurvey: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -101,15 +104,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 throw new Error("INVALID_CREDENTIALS");
             }
 
-            setUser({
+            const authenticatedUser: User = {
                 id: "1",
                 username: "admin",
-                name: "Administrador",
+                name: "Marlon",
                 role: "ADMIN",
-            });
+                surveyCompleted: false,
+            };
+
+            setUser(authenticatedUser);
+
+            return authenticatedUser;
         },
         [checkSession]
     );
+
+
+    const completeSurvey = useCallback(() => {
+        setUser((currentUser) => {
+            if (!currentUser) {
+                return null;
+            }
+
+            return {
+                ...currentUser,
+                surveyCompleted: true,
+            };
+        });
+    }, []);
+
 
     const logout = useCallback(async () => {
         try {
@@ -130,6 +153,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         checkSession();
     }, [checkSession]);
 
+
     const value = useMemo(
         () => ({
             user,
@@ -138,9 +162,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             login,
             logout,
             checkSession,
+            completeSurvey,
         }),
-        [user, isLoading, login, logout, checkSession]
+        [
+            user,
+            isLoading,
+            login,
+            logout,
+            checkSession,
+            completeSurvey,
+        ]
     );
+
 
     return (
         <AuthContext.Provider value={value}>

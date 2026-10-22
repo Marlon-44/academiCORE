@@ -1,0 +1,62 @@
+.ref {
+    text-decoration: none;
+    width: 100%;
+}
+
+.cardContainer {
+    width: 32%;
+    height: 100%;
+    min-height: 200px;
+    border: 2px solid #fff;
+    border-radius: 1rem;
+    display: flex;
+    background-color: #fafafa;
+    padding: 1.5rem;
+    align-items: center;
+    
+    /* CORRECCIÓN: La transición se define en el estado base */
+    transition: transform 0.3s ease; 
+    box-shadow: 2px 2px 15px 1px #dddddd;
+}
+
+.cardContainer:hover {
+    /* CORRECCIÓN: Aquí solo va el cambio visual */
+    transform: scale(1.02); 
+}
+
+.infoContainer{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+.infoContainer h3{
+    font-size: 1.2rem;
+}
+.cardContainer p{
+    font-size: 0.8rem;
+    color: var(--font-color-light);
+}
+.refLink {
+    font-size: 0.8rem;
+    width: fit-content;
+    padding: 5px 20px;
+    background-color: var(--secondary-color);
+    border-radius: 3rem;
+    cursor: pointer;
+    color: var(--font-color-dark);
+    text-decoration: none;
+    /* Cambiamos 'transform' por 'background-color' (o 'all' si quieres animar más cosas) */
+    transition: background-color 0.3s ease-in-out; 
+}
+
+.refLink:hover {
+    /* Usamos la propiedad correcta para cambiar el color de fondo */
+    background-color: #dfaa0d;
+}
+.cardContainer img {
+    width: 50px;
+    height: 50px;
+    /* Garantiza que la altura dependa del ancho */
+    aspect-ratio: 1 / 1;
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEventHandler } from "react";
 
 import styles from "./index.module.css";
 import { useAuth } from "../../auth/AuthContext";
@@ -76,8 +76,8 @@ export const LoginDropdown = ({
 
     const isFormValid = isUsernameValid && isPasswordValid;
 
-    const handleSubmit: React.SubmitEventHandler<HTMLFormElement> = async (
-    event) => {
+    const handleSubmit: FormEventHandler<HTMLFormElement> = async (
+        event) => {
         event.preventDefault();
 
         if (!isFormValid || isLoading) {
@@ -109,15 +109,23 @@ export const LoginDropdown = ({
              */
 
             // Simulación temporal
-            await login({
+            const authenticatedUser = await login({
                 username: username.trim(),
                 password,
             });
 
             onClose();
+            if (!authenticatedUser.surveyCompleted) {
+                navigate("/percepcion-estudiantil", {
+                    replace: true,
+                });
+                return;
+            }
+
             navigate("/student-dashboard", {
                 replace: true,
             });
+
         } catch {
             /*
              * No mostramos si el usuario existe o no.

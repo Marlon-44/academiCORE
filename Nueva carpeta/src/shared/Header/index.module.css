@@ -1,0 +1,281 @@
+.header {
+    width: 100%;
+    margin: auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    padding: 1rem 2rem;
+    position: fixed;
+    background-color: rgb(255, 255, 255);
+    align-self: center;
+    z-index: 10;
+    border-radius: 3rem;
+
+}
+
+.loginWrapper {
+    position: relative;
+}
+
+.logoSection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    z-index: 2;
+}
+
+.header nav {
+    z-index: 2;
+}
+
+.logoSection img {
+    max-width: 10vw;
+    padding-right: 1rem;
+}
+
+.logoDescription h1 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.logoDescription p {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--font-color-light);
+}
+
+.headerList {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+}
+
+.headerLink {
+    text-decoration: none;
+    color: var(--font-color-dark);
+
+}
+
+.headerLink {
+    position: relative;
+    text-decoration: none;
+    color: var(--font-color-light);
+    font-weight: 500;
+    padding-bottom: 4px;
+    transition: color 0.3s ease;
+}
+
+.headerLink::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--uc-yellow);
+    transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.headerLink:hover::after {
+    width: 100%;
+    left: 0%;
+}
+
+.headerLink:hover {
+    color: var(--font-color-dark);
+}
+
+.doubleLink {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+
+}
+
+.doubleLink img {
+    max-width: 30%;
+}
+
+.loginButton {
+    background-color: var(--uc-blue-dark);
+    ;
+    color: #fff;
+    border: none;
+    border-radius: 0.8rem;
+    padding: 0.5rem 0.2rem 0.5rem 1rem;
+    text-decoration: none;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 50px;
+    width: 200px;
+}
+
+.arrowContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 100px;
+    margin-left: 10px;
+    background-color: #fff;
+    height: 40px;
+    width: 40px;
+    padding: 5px;
+    border-radius: 0.5em;
+}
+
+.arrowContainer img {
+    width: 20px;
+    height: 20px;
+}
+
+.loginButton2 {
+    display: none;
+}
+
+.menuButton {
+    display: none;
+    width: 35px;
+    height: 35px;
+    border: none;
+    background-color: rgba(255, 255, 255, .1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    padding: 10px;
+    border-radius: 50%;
+}
+
+.menuButton span {
+    position: absolute;
+    width: 70%;
+    height: 2px;
+    background-color: #fff;
+    transition: .3s ease;
+}
+
+.menuButton span:first-child {
+    top: 35%;
+}
+
+.menuButton span:last-child {
+    top: 55%;
+}
+
+.active span:first-child {
+    top: 45%;
+    transform:
+        rotate(45deg);
+}
+
+.active span:last-child {
+
+    top: 45%;
+    transform:
+        rotate(-45deg);
+}
+
+.menuButton {
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
+
+
+@media (max-width: 748px) {
+    .header {
+        width: 100%;
+        margin-top: 10px;
+        border: 1px solid #e4e4e4;
+        border-radius: 3rem;
+    }
+
+    .overlay {
+        display: none;
+    }
+
+    .header.grow {
+
+        height: 380px;
+        border-radius: 2rem;
+        align-items: flex-start;
+    }
+
+    .menuButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 12vw;
+        height: 12vw;
+
+    }
+
+
+    .headerList {
+        position: absolute;
+        top: 10vh;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-20px);
+        pointer-events: none;
+        transition:
+            opacity .3s ease,
+            transform .3s ease,
+            visibility .3s ease;
+        background: rgba(255, 255, 255, .1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        z-index: 2;
+    }
+
+    .headerList.open {
+
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: all;
+    }
+
+    .logoDescription {
+        display: none;
+    }
+
+    .loginButton {
+        display: none;
+    }
+
+    .loginButton2 {
+        display: block;
+    }
+
+    .logoSection {
+        display: flex;
+        align-items: center;
+        width: 50%;
+        align-items: center;
+
+    }
+
+    .logoSection img {
+        max-width: 100%;
+        width: 100%;
+        border-right: none;
+    }
+}
