@@ -32,7 +32,12 @@ export const Home = () => {
     console.log(services)*/}
     return (
         <div className={styles.homeContainer}>
-            <h1>ACADEMI<span className={styles.highlight}>CORE</span></h1>
+            <h1 className={styles.title}>ACADEMI<span className={styles.highlight}>CORE</span></h1>
+            <div className={styles.mobileTitle}>
+                <h1>Academi<span className={styles.highlight}>CORE</span></h1>
+                <p>Gestion de procesos academicos.</p>
+                <img src="/assets/logoWhiteUDC.png" alt="Landing" />
+            </div>
             <Banner2 />
             <AnunciosSection />
             <GuiasSection />

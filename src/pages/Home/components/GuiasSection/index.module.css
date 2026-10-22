@@ -221,15 +221,18 @@
 
 @media (max-width: 500px) {
     .guiasSection {
-        padding: 55px 0;
+        padding: 0;
     }
 
     .container {
-        width: 88%;
+        width: 100%;
     }
 
     .intro h2 {
         font-size: 2.5rem;
+    }
+    .intro p {
+        width: 100%;
     }
 
     .question {

@@ -244,17 +244,24 @@
 
 @media (max-width: 600px) {
     .anunciosSection {
-        padding: 60px 0;
+        padding:  0;
+        margin: 1rem;
+        margin: auto;
     }
 
     .container {
-        width: min(100% - 24px, 1200px);
+        width:100%;
+        margin: 0 auto;
     }
 
     .header {
         align-items: flex-start;
         flex-direction: column;
         gap: 18px;
+    }
+    .header p{
+        max-width: 100%;
+        width: 100%;
     }
 
     .featuredImage {
@@ -268,6 +275,12 @@
 
     .featuredContent h3 {
         font-size: 30px;
+    }
+    .featuredContent p {
+        width: 100%;
+    }
+    .smallContent p{
+        width: 100%;
     }
 
     .grid {
