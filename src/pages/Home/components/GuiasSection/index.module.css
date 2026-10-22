@@ -217,6 +217,9 @@
     .answerContent {
         padding-right: 45px;
     }
+    .answerContent p {
+        width: 100%;
+    }
 }
 
 @media (max-width: 500px) {
