@@ -5,6 +5,7 @@ import com.academicore.evaluacion.domain.model.Docente;
 import com.academicore.evaluacion.domain.model.Encuesta;
 import com.academicore.evaluacion.domain.model.EstadoDocente;
 import com.academicore.evaluacion.domain.model.EstadoEvaluacion;
+import com.academicore.evaluacion.domain.model.Estudiante;
 import com.academicore.evaluacion.domain.model.EvaluacionDocente;
 import com.academicore.evaluacion.domain.model.MetodoSentimiento;
 import com.academicore.evaluacion.domain.model.PreguntaEvaluacion;
@@ -14,6 +15,7 @@ import com.academicore.evaluacion.domain.model.TipoPregunta;
 import com.academicore.evaluacion.infrastructure.persistence.entity.CategoriaPreguntaEntity;
 import com.academicore.evaluacion.infrastructure.persistence.entity.DocenteEntity;
 import com.academicore.evaluacion.infrastructure.persistence.entity.EncuestaEntity;
+import com.academicore.evaluacion.infrastructure.persistence.entity.EstudianteEntity;
 import com.academicore.evaluacion.infrastructure.persistence.entity.EvaluacionDocenteEntity;
 import com.academicore.evaluacion.infrastructure.persistence.entity.PreguntaEvaluacionEntity;
 import com.academicore.evaluacion.infrastructure.persistence.entity.RespuestaPreguntaEntity;
@@ -27,9 +29,17 @@ public final class EvaluacionDocenteMapper {
         return Docente.builder()
                 .id(e.getId())
                 .numeroDocumento(e.getNumeroDocumento())
+                .sexo(e.getSexo())
                 .nombres(e.getNombres())
                 .apellidos(e.getApellidos())
                 .email(e.getEmail())
+                .telefono(e.getTelefono())
+                .direccion(e.getDireccion())
+                .tipoVinculacion(e.getTipoVinculacion())
+                .escalafon(e.getEscalafon())
+                .nivelFormacion(e.getNivelFormacion())
+                .departamentoId(e.getDepartamentoId())
+                .fechaIngreso(e.getFechaIngreso())
                 .estado(e.getEstado() != null ? EstadoDocente.valueOf(e.getEstado()) : null)
                 .build();
     }
@@ -39,9 +49,17 @@ public final class EvaluacionDocenteMapper {
         return DocenteEntity.builder()
                 .id(d.getId())
                 .numeroDocumento(d.getNumeroDocumento())
+                .sexo(d.getSexo())
                 .nombres(d.getNombres())
                 .apellidos(d.getApellidos())
                 .email(d.getEmail())
+                .telefono(d.getTelefono())
+                .direccion(d.getDireccion())
+                .tipoVinculacion(d.getTipoVinculacion())
+                .escalafon(d.getEscalafon())
+                .nivelFormacion(d.getNivelFormacion())
+                .departamentoId(d.getDepartamentoId())
+                .fechaIngreso(d.getFechaIngreso())
                 .estado(d.getEstado() != null ? d.getEstado().name() : "ACTIVO")
                 .build();
     }
@@ -127,6 +145,7 @@ public final class EvaluacionDocenteMapper {
         return Encuesta.builder()
                 .id(e.getId())
                 .evaluacionId(e.getEvaluacionId())
+                .estudianteId(e.getEstudianteId())
                 .fechaRespuesta(e.getFechaRespuesta())
                 .build();
     }
@@ -136,7 +155,50 @@ public final class EvaluacionDocenteMapper {
         return EncuestaEntity.builder()
                 .id(d.getId())
                 .evaluacionId(d.getEvaluacionId())
+                .estudianteId(d.getEstudianteId())
                 .fechaRespuesta(d.getFechaRespuesta())
+                .build();
+    }
+
+    public static Estudiante toDomain(EstudianteEntity e) {
+        if (e == null) return null;
+        return Estudiante.builder()
+                .id(e.getId())
+                .codigo(e.getCodigo())
+                .numeroDocumento(e.getNumeroDocumento())
+                .sexo(e.getSexo())
+                .nombres(e.getNombres())
+                .apellidos(e.getApellidos())
+                .email(e.getEmail())
+                .telefono(e.getTelefono())
+                .direccion(e.getDireccion())
+                .programaId(e.getProgramaId())
+                .semestre(e.getSemestre())
+                .estadoAcademico(e.getEstadoAcademico())
+                .estadoIngreso(e.getEstadoIngreso())
+                .planEstudiosId(e.getPlanEstudiosId())
+                .estado(e.getEstado())
+                .build();
+    }
+
+    public static EstudianteEntity toEntity(Estudiante d) {
+        if (d == null) return null;
+        return EstudianteEntity.builder()
+                .id(d.getId())
+                .codigo(d.getCodigo())
+                .numeroDocumento(d.getNumeroDocumento())
+                .sexo(d.getSexo())
+                .nombres(d.getNombres())
+                .apellidos(d.getApellidos())
+                .email(d.getEmail())
+                .telefono(d.getTelefono())
+                .direccion(d.getDireccion())
+                .programaId(d.getProgramaId())
+                .semestre(d.getSemestre())
+                .estadoAcademico(d.getEstadoAcademico() != null ? d.getEstadoAcademico() : "NORMAL")
+                .estadoIngreso(d.getEstadoIngreso() != null ? d.getEstadoIngreso() : "NO ESPECIFICA")
+                .planEstudiosId(d.getPlanEstudiosId())
+                .estado(d.getEstado() != null ? d.getEstado() : "ACTIVO")
                 .build();
     }
 

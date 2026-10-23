@@ -579,8 +579,11 @@ export function EvaluacionDocente() {
                                     )}
                                     {encuestas.map((enc) => (
                                         <option key={enc.id} value={enc.id}>
-                                            #{enc.id} · {enc.promedio.toFixed(2)} (
-                                            {enc.valoracion})
+                                            #{enc.id}
+                                            {enc.estudianteNombre
+                                                ? ` · ${enc.estudianteNombre}`
+                                                : ""}{" "}
+                                            · {enc.promedio.toFixed(2)} ({enc.valoracion})
                                         </option>
                                     ))}
                                 </select>

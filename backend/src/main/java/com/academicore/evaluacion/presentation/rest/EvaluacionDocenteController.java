@@ -5,12 +5,15 @@ import com.academicore.evaluacion.application.dto.CambiarEstadoRequest;
 import com.academicore.evaluacion.application.dto.CategoriaPreguntaResponse;
 import com.academicore.evaluacion.application.dto.CrearCategoriaRequest;
 import com.academicore.evaluacion.application.dto.CrearDocenteRequest;
+import com.academicore.evaluacion.application.dto.CrearEstudianteRequest;
 import com.academicore.evaluacion.application.dto.CrearEvaluacionRequest;
 import com.academicore.evaluacion.application.dto.CrearPreguntaRequest;
 import com.academicore.evaluacion.application.dto.DocenteGraficasResponse;
+import com.academicore.evaluacion.application.dto.DocenteReporteResponse;
 import com.academicore.evaluacion.application.dto.DocenteResponse;
 import com.academicore.evaluacion.application.dto.EncuestaGraficaResponse;
 import com.academicore.evaluacion.application.dto.EncuestaResponse;
+import com.academicore.evaluacion.application.dto.EstudianteResponse;
 import com.academicore.evaluacion.application.dto.EvaluacionGraficasResponse;
 import com.academicore.evaluacion.application.dto.EvaluacionResponse;
 import com.academicore.evaluacion.application.dto.PreguntaResponse;
@@ -18,6 +21,7 @@ import com.academicore.evaluacion.application.dto.RegistrarEncuestaRequest;
 import com.academicore.evaluacion.application.usecase.CatalogoEvaluacionUseCase;
 import com.academicore.evaluacion.application.usecase.DocenteUseCase;
 import com.academicore.evaluacion.application.usecase.EncuestaUseCase;
+import com.academicore.evaluacion.application.usecase.EstudianteUseCase;
 import com.academicore.evaluacion.application.usecase.EvaluacionDocenteUseCase;
 import com.academicore.evaluacion.application.usecase.GraficasUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,6 +49,7 @@ public class EvaluacionDocenteController {
     private final EvaluacionDocenteUseCase evaluacionUseCase;
     private final EncuestaUseCase encuestaUseCase;
     private final GraficasUseCase graficasUseCase;
+    private final EstudianteUseCase estudianteUseCase;
 
     // ============================================================
     // Docentes
@@ -87,6 +92,47 @@ public class EvaluacionDocenteController {
             @Parameter(description = "Limitar a una asignatura específica")
             @RequestParam(required = false) Long asignaturaId) {
         return ResponseEntity.ok(graficasUseCase.graficasDocente(id, asignaturaId));
+    }
+
+    @GetMapping("/docentes/{id}/reporte")
+    @Operation(summary = "Reporte completo para el docente: todas las respuestas de texto "
+            + "que los estudiantes escribieron sobre él, agrupadas por evaluación "
+            + "(materia, grupo y periodo). Con ?asignaturaId se limita a una materia")
+    public ResponseEntity<DocenteReporteResponse> reporteDocente(
+            @PathVariable Long id,
+            @Parameter(description = "Limitar a una asignatura específica")
+            @RequestParam(required = false) Long asignaturaId) {
+        return ResponseEntity.ok(graficasUseCase.reporteDocente(id, asignaturaId));
+    }
+
+    // ============================================================
+    // Estudiantes
+    // ============================================================
+
+    @PostMapping("/estudiantes")
+    @Operation(summary = "Registrar un estudiante")
+    public ResponseEntity<EstudianteResponse> crearEstudiante(
+            @Valid @RequestBody CrearEstudianteRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(estudianteUseCase.crear(request));
+    }
+
+    @GetMapping("/estudiantes")
+    @Operation(summary = "Listar estudiantes")
+    public ResponseEntity<List<EstudianteResponse>> listarEstudiantes() {
+        return ResponseEntity.ok(estudianteUseCase.listar());
+    }
+
+    @GetMapping("/estudiantes/{id}")
+    @Operation(summary = "Detalle de un estudiante")
+    public ResponseEntity<EstudianteResponse> consultarEstudiante(@PathVariable Long id) {
+        return ResponseEntity.ok(estudianteUseCase.consultar(id));
+    }
+
+    @GetMapping("/estudiantes/{id}/encuestas")
+    @Operation(summary = "Detalle de cada encuesta que respondió el estudiante "
+            + "(vista administrativa: una encuesta por evaluación respondida)")
+    public ResponseEntity<List<EncuestaResponse>> encuestasDeEstudiante(@PathVariable Long id) {
+        return ResponseEntity.ok(encuestaUseCase.listarPorEstudiante(id));
     }
 
     // ============================================================
@@ -180,9 +226,16 @@ public class EvaluacionDocenteController {
     }
 
     @GetMapping("/evaluaciones/{id}/encuestas")
-    @Operation(summary = "Listar encuestas respondidas de una evaluación")
+    @Operation(summary = "Listar encuestas respondidas de una evaluación "
+            + "(incluye qué estudiante respondió cada una)")
     public ResponseEntity<List<EncuestaResponse>> encuestasDeEvaluacion(@PathVariable Long id) {
         return ResponseEntity.ok(encuestaUseCase.listarPorEvaluacion(id));
+    }
+
+    @GetMapping("/evaluaciones/{id}/inscritos")
+    @Operation(summary = "Listar los estudiantes inscritos en el grupo de una evaluación")
+    public ResponseEntity<List<EstudianteResponse>> inscritosDeEvaluacion(@PathVariable Long id) {
+        return ResponseEntity.ok(estudianteUseCase.listarInscritos(id));
     }
 
     @GetMapping("/evaluaciones/{id}/graficas")
@@ -200,6 +253,7 @@ public class EvaluacionDocenteController {
     @PostMapping("/encuestas")
     @Operation(summary = "Responder una encuesta: todas las preguntas activas "
             + "(valor 1-5 para LIKERT, textoRespuesta para TEXTO). "
+            + "Con estudianteId el estudiante debe estar inscrito y no repetir encuesta. "
             + "Cada respuesta de texto recibe análisis de sentimiento automático")
     public ResponseEntity<EncuestaResponse> registrarEncuesta(
             @Valid @RequestBody RegistrarEncuestaRequest request) {

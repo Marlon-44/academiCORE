@@ -15,5 +15,9 @@ public interface EncuestaRepository {
 
     List<Encuesta> findByEvaluacionIdIn(List<Long> evaluacionIds);
 
+    List<Encuesta> findByEstudianteId(Long estudianteId);
+
+    boolean existsByEvaluacionIdAndEstudianteId(Long evaluacionId, Long estudianteId);
+
     long countByEvaluacionId(Long evaluacionId);
 }

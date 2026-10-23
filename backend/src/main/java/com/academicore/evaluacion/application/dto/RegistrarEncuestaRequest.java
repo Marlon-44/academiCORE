@@ -24,6 +24,9 @@ public class RegistrarEncuestaRequest {
     @NotNull
     private Long evaluacionId;
 
+    /** Estudiante que responde (debe estar inscrito en la evaluación). */
+    private Long estudianteId;
+
     @NotEmpty
     @Valid
     private List<RespuestaRequest> respuestas;

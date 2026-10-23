@@ -27,4 +27,16 @@ public interface EvaluacionDocenteJpaRepository extends JpaRepository<Evaluacion
     @Query(value = "SELECT a.id, a.codigo, a.nombre FROM asignatura a WHERE a.id IN (:ids)",
            nativeQuery = true)
     List<Object[]> findAsignaturaInfo(@Param("ids") List<Long> ids);
+
+    @Query(value = "SELECT p.id, p.codigo_interno, p.nombre FROM programa_academico p WHERE p.id IN (:ids)",
+           nativeQuery = true)
+    List<Object[]> findProgramaInfo(@Param("ids") List<Long> ids);
+
+    @Query(value = "SELECT d.id, d.codigo, d.nombre FROM departamento_academico d WHERE d.id IN (:ids)",
+           nativeQuery = true)
+    List<Object[]> findDepartamentoInfo(@Param("ids") List<Long> ids);
+
+    @Query(value = "SELECT pl.id, pl.codigo_pensum, pl.nombre FROM plan_estudios pl WHERE pl.id IN (:ids)",
+           nativeQuery = true)
+    List<Object[]> findPlanEstudiosInfo(@Param("ids") List<Long> ids);
 }

@@ -18,6 +18,7 @@ public class Encuesta {
 
     private Long id;
     private Long evaluacionId;
+    private Long estudianteId;
     private LocalDateTime fechaRespuesta;
     private List<RespuestaPregunta> respuestas;
 }

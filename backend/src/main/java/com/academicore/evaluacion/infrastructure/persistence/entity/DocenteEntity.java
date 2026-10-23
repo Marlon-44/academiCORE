@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "docente")
 @Getter
@@ -28,6 +30,9 @@ public class DocenteEntity {
     @Column(name = "numero_documento", nullable = false, length = 30)
     private String numeroDocumento;
 
+    @Column(name = "sexo", length = 20)
+    private String sexo;
+
     @Column(name = "nombres", nullable = false, length = 150)
     private String nombres;
 
@@ -36,6 +41,27 @@ public class DocenteEntity {
 
     @Column(name = "email", length = 150)
     private String email;
+
+    @Column(name = "telefono", length = 30)
+    private String telefono;
+
+    @Column(name = "direccion", length = 200)
+    private String direccion;
+
+    @Column(name = "tipo_vinculacion", length = 30)
+    private String tipoVinculacion;
+
+    @Column(name = "escalafon", length = 30)
+    private String escalafon;
+
+    @Column(name = "nivel_formacion", length = 30)
+    private String nivelFormacion;
+
+    @Column(name = "departamento_id")
+    private Long departamentoId;
+
+    @Column(name = "fecha_ingreso")
+    private LocalDate fechaIngreso;
 
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;

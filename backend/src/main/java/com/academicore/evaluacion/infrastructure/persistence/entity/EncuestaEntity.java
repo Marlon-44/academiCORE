@@ -30,6 +30,9 @@ public class EncuestaEntity {
     @Column(name = "evaluacion_id", nullable = false)
     private Long evaluacionId;
 
+    @Column(name = "estudiante_id")
+    private Long estudianteId;
+
     @Column(name = "fecha_respuesta", nullable = false)
     private LocalDateTime fechaRespuesta;
 }

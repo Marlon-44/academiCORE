@@ -63,6 +63,16 @@ public class EncuestaRepositoryAdapter implements EncuestaRepository {
     }
 
     @Override
+    public List<Encuesta> findByEstudianteId(Long estudianteId) {
+        return conRespuestas(jpaRepository.findByEstudianteId(estudianteId));
+    }
+
+    @Override
+    public boolean existsByEvaluacionIdAndEstudianteId(Long evaluacionId, Long estudianteId) {
+        return jpaRepository.existsByEvaluacionIdAndEstudianteId(evaluacionId, estudianteId);
+    }
+
+    @Override
     public long countByEvaluacionId(Long evaluacionId) {
         return jpaRepository.countByEvaluacionId(evaluacionId);
     }

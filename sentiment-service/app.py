@@ -1,25 +1,34 @@
 """
 Microservicio de análisis de sentimiento en español para academiCORE.
-Envuelve la librería sentiment-analysis-spanish (modelo pre-entrenado
-sobre ~800k reseñas en español) detrás de un API REST mínima.
+
+Usa un DistilBERT multilingüe afinado para sentimiento
+(lxyuan/distilbert-base-multilingual-cased-sentiments-student),
+mucho más preciso que el viejo Naive Bayes de sentiment-analysis-spanish
+sobre comentarios académicos.
 
 Uso local:
+    pip install torch --index-url https://download.pytorch.org/whl/cpu
     pip install -r requirements.txt
     python app.py
 """
 from flask import Flask, jsonify, request
-from sentiment_analysis_spanish import sentiment_analysis
+from transformers import pipeline
+
+MODELO = "lxyuan/distilbert-base-multilingual-cased-sentiments-student"
 
 app = Flask(__name__)
-_analizador = sentiment_analysis.SentimentAnalysisSpanish()
+_clf = pipeline("sentiment-analysis", model=MODELO)
 
-UMBRAL_POSITIVO = 0.6
-UMBRAL_NEGATIVO = 0.4
+ETIQUETAS = {
+    "positive": "POSITIVO",
+    "negative": "NEGATIVO",
+    "neutral": "NEUTRO",
+}
 
 
 @app.get("/salud")
 def salud():
-    return jsonify(estado="ok")
+    return jsonify(estado="ok", modelo=MODELO)
 
 
 @app.post("/sentimiento")
@@ -29,15 +38,9 @@ def sentimiento():
     if not texto:
         return jsonify(error="El campo 'texto' es requerido"), 400
 
-    score = float(_analizador.sentiment(texto))
-    if score >= UMBRAL_POSITIVO:
-        etiqueta = "POSITIVO"
-    elif score <= UMBRAL_NEGATIVO:
-        etiqueta = "NEGATIVO"
-    else:
-        etiqueta = "NEUTRO"
-
-    return jsonify(sentimiento=etiqueta, score=round(score, 4))
+    resultado = _clf(texto, truncation=True, max_length=512)[0]
+    etiqueta = ETIQUETAS.get(resultado["label"].lower(), "NEUTRO")
+    return jsonify(sentimiento=etiqueta, score=round(float(resultado["score"]), 4))
 
 
 if __name__ == "__main__":

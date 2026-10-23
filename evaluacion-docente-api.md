@@ -23,18 +23,26 @@ Documentación interactiva (probar endpoints en vivo):
 ## Docentes
 
 ### `POST /docentes`
-Registra un docente evaluable.
+Registra un docente evaluable con su ficha laboral.
 
 **Body:**
 ```json
 {
   "numeroDocumento": "10301274",      // requerido, único
+  "sexo": "MASCULINO",                // MASCULINO | FEMENINO | OTRO
   "nombres": "GABRIEL ELIAS",         // requerido
   "apellidos": "CHANCHI GOLONDRINO",  // requerido
-  "email": "chanchi@unicartagena.edu.co" // opcional
+  "email": "chanchi@unicartagena.edu.co",
+  "telefono": "3174501234",
+  "direccion": "URB. EL COUNTRY CALLE 12 #8-45",
+  "tipoVinculacion": "PLANTA_TIEMPO_COMPLETO", // PLANTA_TIEMPO_COMPLETO | PLANTA_MEDIO_TIEMPO | OCASIONAL | CATEDRA
+  "escalafon": "TITULAR",             // AUXILIAR | ASISTENTE | ASOCIADO | TITULAR
+  "nivelFormacion": "DOCTORADO",      // PREGRADO | ESPECIALIZACION | MAESTRIA | DOCTORADO | POSTDOCTORADO
+  "departamentoId": 1,                // departamento de adscripción
+  "fechaIngreso": "2015-02-01"
 }
 ```
-**Respuesta 201:** `{ id, numeroDocumento, nombres, apellidos, nombreCompleto, email, estado }`
+**Respuesta 201:** ficha completa incl. `departamentoCodigo/departamentoNombre` resueltos del catálogo.
 
 ### `GET /docentes`
 Lista docentes. **Query opcional:** `?estado=ACTIVO|INACTIVO`
@@ -53,6 +61,51 @@ Gráficas globales del docente (todas sus materias o una en específico).
 **Path:** `id` del docente · **Query opcional:** `?asignaturaId={id}` limita a una materia.
 
 **Respuesta:** promedio general + valoración, radar por categoría, comparativo por materia/grupo/periodo, evolución por periodo, pie de sentimientos + score promedio, nube de palabras, fortalezas y oportunidades (top 3 preguntas).
+
+### `GET /docentes/{id}/reporte`
+Reporte completo para el docente: **todas las respuestas de texto** que los
+estudiantes escribieron sobre él, agrupadas por evaluación.
+
+**Path:** `id` del docente · **Query opcional:** `?asignaturaId={id}` limita a una materia.
+
+**Respuesta:**
+```json
+{
+  "docenteId": 1, "docenteNombre": "...", "totalEncuestas": 45,
+  "promedioGeneral": 3.66, "valoracion": "BUENO",
+  "evaluaciones": [{
+    "evaluacionId": 1, "asignaturaCodigo": "EP1303", "grupo": "A1",
+    "periodo": "2025-1", "encuestas": 20, "promedio": 3.9,
+    "comentarios": [{
+      "encuestaId": 5, "numero": 16, "pregunta": "¿Qué aspectos...?",
+      "texto": "Debería...", "sentimiento": "NEUTRO",
+      "sentimientoScore": 0.51, "sentimientoMetodo": "MODELO"
+    }]
+  }]
+}
+```
+
+---
+
+## Estudiantes
+
+### `POST /estudiantes`
+Registra un estudiante (ficha estilo SIA).
+
+**Body:** `numeroDocumento`, `nombres`, `apellidos` requeridos; opcionales
+`codigo`, `sexo`, `email`, `telefono`, `direccion`, `programaId`, `semestre`.
+
+### `GET /estudiantes`
+Lista todos los estudiantes con ficha completa: `codigo`, `numeroDocumento`,
+`sexo`, contacto, `programaCodigo/programaNombre`, `semestre`,
+`estadoAcademico`, `estadoIngreso`, `planCodigo/planNombre`.
+
+### `GET /estudiantes/{id}`
+Detalle de un estudiante.
+
+### `GET /estudiantes/{id}/encuestas`
+Vista administrativa: **el detalle de cada encuesta que respondió el
+estudiante** (una por evaluación), con todas sus respuestas y sentimientos.
 
 ---
 
@@ -136,10 +189,13 @@ Lista evaluaciones. **Queries opcionales:** `?docenteId=` `?asignaturaId=` `?per
 Detalle de una evaluación.
 
 ### `PATCH /evaluaciones/{id}/estado`
-Abre/cierra la evaluación. **Body:** `{ "estado": "ACTIVA" }` — `ACTIVA` | `CERRADA` (una cerrada no acepta encuestas).
+Abre/cierra la evaluación. **Body:** `{ "estado": "ABIERTA" }` — `ABIERTA` | `CERRADA` (una cerrada no acepta encuestas).
 
 ### `GET /evaluaciones/{id}/encuestas`
-Lista las encuestas respondidas de esa evaluación, con todas sus respuestas (Likert con `valor`, texto con `textoRespuesta` + sentimiento).
+Lista las encuestas respondidas de esa evaluación, con todas sus respuestas (Likert con `valor`, texto con `textoRespuesta` + sentimiento) y el estudiante que respondió cada una (`estudianteId`, `estudianteNombre`, `estudianteDocumento`).
+
+### `GET /evaluaciones/{id}/inscritos`
+Lista los estudiantes inscritos en el grupo de la evaluación (ficha completa).
 
 ### `GET /evaluaciones/{id}/graficas`
 Gráficas agregadas de la evaluación (todas las encuestas del grupo).
@@ -156,16 +212,17 @@ Registra la respuesta de un estudiante. Debe incluir **todas las preguntas activ
 **Body:**
 ```json
 {
-  "evaluacionId": 1,                    // requerido; la evaluación debe estar ACTIVA
+  "evaluacionId": 1,                    // requerido; la evaluación debe estar ABIERTA
+  "estudianteId": 36,                   // opcional; debe estar inscrito en la evaluación
   "respuestas": [                        // requerido, no vacío, sin duplicados
     { "preguntaId": 1,  "valor": 5 },    // pregunta LIKERT: valor 1-5 obligatorio
     { "preguntaId": 16, "textoRespuesta": "El docente explica muy bien..." } // TEXTO: obligatorio, máx 2000
   ]
 }
 ```
-**Errores:** 404 evaluación inexistente · 400 evaluación cerrada, pregunta inexistente/inactiva, duplicada, falta alguna activa, valor fuera de 1-5 o texto vacío en pregunta TEXTO.
+**Errores:** 404 evaluación/estudiante inexistente · 409 estudiante ya respondió · 400 evaluación cerrada, estudiante no inscrito, pregunta inexistente/inactiva, duplicada, falta alguna activa, valor fuera de 1-5 o texto vacío en pregunta TEXTO.
 
-**Respuesta 201:** `{ id, evaluacionId, fechaRespuesta, promedio, valoracion, respuestas: [{ preguntaId, valor, textoRespuesta, sentimiento, sentimientoScore, sentimientoMetodo }] }`
+**Respuesta 201:** `{ id, evaluacionId, estudianteId, estudianteNombre, estudianteDocumento, fechaRespuesta, promedio, valoracion, respuestas: [...] }`
 
 ### `GET /encuestas/{id}`
 Detalle de una encuesta respondida (mismo shape anterior).

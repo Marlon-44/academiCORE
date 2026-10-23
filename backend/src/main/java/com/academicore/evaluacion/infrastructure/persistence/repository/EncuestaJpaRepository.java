@@ -11,5 +11,9 @@ public interface EncuestaJpaRepository extends JpaRepository<EncuestaEntity, Lon
 
     List<EncuestaEntity> findByEvaluacionIdIn(List<Long> evaluacionIds);
 
+    List<EncuestaEntity> findByEstudianteId(Long estudianteId);
+
+    boolean existsByEvaluacionIdAndEstudianteId(Long evaluacionId, Long estudianteId);
+
     long countByEvaluacionId(Long evaluacionId);
 }

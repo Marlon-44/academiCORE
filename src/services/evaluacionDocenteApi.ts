@@ -7,10 +7,20 @@ const API_BASE_URL = "http://localhost:8080/api/v1/evaluacion-docente";
 export interface DocenteDTO {
     id: number;
     numeroDocumento: string;
+    sexo: string | null;
     nombres: string;
     apellidos: string;
     nombreCompleto: string;
     email: string | null;
+    telefono: string | null;
+    direccion: string | null;
+    tipoVinculacion: string | null;
+    escalafon: string | null;
+    nivelFormacion: string | null;
+    departamentoId: number | null;
+    departamentoCodigo: string | null;
+    departamentoNombre: string | null;
+    fechaIngreso: string | null;
     estado: string;
 }
 
@@ -70,10 +80,63 @@ export interface RespuestaItemDTO {
 export interface EncuestaDTO {
     id: number;
     evaluacionId: number;
+    estudianteId: number | null;
+    estudianteNombre: string | null;
+    estudianteDocumento: string | null;
     fechaRespuesta: string;
     promedio: number;
     valoracion: string;
     respuestas: RespuestaItemDTO[];
+}
+
+export interface EstudianteDTO {
+    id: number;
+    codigo: string | null;
+    numeroDocumento: string;
+    sexo: string | null;
+    nombres: string;
+    apellidos: string;
+    nombreCompleto: string;
+    email: string | null;
+    telefono: string | null;
+    direccion: string | null;
+    programaId: number | null;
+    programaCodigo: string | null;
+    programaNombre: string | null;
+    semestre: number | null;
+    estadoAcademico: string | null;
+    estadoIngreso: string | null;
+    planEstudiosId: number | null;
+    planCodigo: string | null;
+    planNombre: string | null;
+    estado: string;
+}
+
+export interface DocenteReporteDTO {
+    docenteId: number;
+    docenteNombre: string;
+    numeroDocumento: string;
+    totalEncuestas: number;
+    promedioGeneral: number;
+    valoracion: string;
+    evaluaciones: {
+        evaluacionId: number;
+        asignaturaCodigo: string | null;
+        asignaturaNombre: string | null;
+        grupo: string;
+        periodo: string;
+        encuestas: number;
+        promedio: number;
+        comentarios: {
+            encuestaId: number;
+            numero: number | null;
+            pregunta: string | null;
+            texto: string;
+            sentimiento: string | null;
+            sentimientoScore: number | null;
+            sentimientoMetodo: string | null;
+        }[];
+    }[];
 }
 
 export interface RespuestaTextoDTO {
@@ -222,6 +285,30 @@ export function fetchEncuestasDeEvaluacion(evaluacionId: number): Promise<Encues
 
 export function fetchEncuestaGrafica(encuestaId: number): Promise<EncuestaGraficaDTO> {
     return get<EncuestaGraficaDTO>(`/encuestas/${encuestaId}/grafica`);
+}
+
+// ============================================================
+// Estudiantes y reportes
+// ============================================================
+
+export function fetchEstudiantes(): Promise<EstudianteDTO[]> {
+    return get<EstudianteDTO[]>("/estudiantes");
+}
+
+export function fetchInscritos(evaluacionId: number): Promise<EstudianteDTO[]> {
+    return get<EstudianteDTO[]>(`/evaluaciones/${evaluacionId}/inscritos`);
+}
+
+export function fetchEncuestasDeEstudiante(estudianteId: number): Promise<EncuestaDTO[]> {
+    return get<EncuestaDTO[]>(`/estudiantes/${estudianteId}/encuestas`);
+}
+
+export function fetchDocenteReporte(
+    docenteId: number,
+    asignaturaId?: number
+): Promise<DocenteReporteDTO> {
+    const query = asignaturaId != null ? `?asignaturaId=${asignaturaId}` : "";
+    return get<DocenteReporteDTO>(`/docentes/${docenteId}/reporte${query}`);
 }
 
 // ============================================================

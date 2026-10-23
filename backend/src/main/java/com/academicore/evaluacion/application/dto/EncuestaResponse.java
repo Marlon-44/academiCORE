@@ -18,6 +18,9 @@ public class EncuestaResponse {
 
     private Long id;
     private Long evaluacionId;
+    private Long estudianteId;
+    private String estudianteNombre;
+    private String estudianteDocumento;
     private LocalDateTime fechaRespuesta;
     private Double promedio;
     private String valoracion;

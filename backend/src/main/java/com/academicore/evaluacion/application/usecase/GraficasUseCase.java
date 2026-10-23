@@ -2,6 +2,7 @@ package com.academicore.evaluacion.application.usecase;
 
 import com.academicore.evaluacion.application.dto.ChartSerie;
 import com.academicore.evaluacion.application.dto.DocenteGraficasResponse;
+import com.academicore.evaluacion.application.dto.DocenteReporteResponse;
 import com.academicore.evaluacion.application.dto.EncuestaGraficaResponse;
 import com.academicore.evaluacion.application.dto.EvaluacionGraficasResponse;
 import com.academicore.evaluacion.application.dto.WordCloudItem;
@@ -304,6 +305,81 @@ public class GraficasUseCase {
                 .oportunidades(oportunidades)
                 .wordCloud(wordCloud(encuestas))
                 .build();
+    }
+
+    // ============================================================
+    // 4. Reporte completo del docente: TODOS los comentarios de texto
+    // ============================================================
+    @Transactional(readOnly = true)
+    public DocenteReporteResponse reporteDocente(Long docenteId, Long asignaturaId) {
+        Docente docente = docenteRepository.findById(docenteId)
+                .orElseThrow(() -> new NotFoundException("Docente", "id", docenteId));
+
+        List<EvaluacionDocente> evaluaciones = asignaturaId != null
+                ? evaluacionRepository.findByDocenteIdAndAsignaturaId(docenteId, asignaturaId)
+                : evaluacionRepository.findByDocenteId(docenteId);
+
+        List<Long> evaluacionIds = evaluaciones.stream().map(EvaluacionDocente::getId).toList();
+        List<Encuesta> encuestas = encuestaRepository.findByEvaluacionIdIn(evaluacionIds);
+        Map<Long, List<Encuesta>> porEvaluacion = encuestas.stream()
+                .collect(Collectors.groupingBy(Encuesta::getEvaluacionId));
+
+        Map<Long, PreguntaEvaluacion> preguntas = preguntasById();
+        Map<Long, AsignaturaCatalogPort.AsignaturaInfo> asignaturas = asignaturaCatalog.findByIds(
+                evaluaciones.stream().map(EvaluacionDocente::getAsignaturaId).distinct().toList());
+
+        List<DocenteReporteResponse.EvaluacionReporte> reportes = evaluaciones.stream()
+                .map(ev -> {
+                    List<Encuesta> delGrupo = porEvaluacion.getOrDefault(ev.getId(), List.of());
+                    AsignaturaCatalogPort.AsignaturaInfo info = asignaturas.get(ev.getAsignaturaId());
+                    return DocenteReporteResponse.EvaluacionReporte.builder()
+                            .evaluacionId(ev.getId())
+                            .asignaturaCodigo(info != null ? info.codigo() : null)
+                            .asignaturaNombre(info != null ? info.nombre() : null)
+                            .grupo(ev.getGrupo())
+                            .periodo(ev.getPeriodo())
+                            .encuestas(delGrupo.size())
+                            .promedio(round2(promedioGlobal(delGrupo)))
+                            .comentarios(comentariosDe(delGrupo, preguntas))
+                            .build();
+                })
+                .toList();
+
+        double promedio = promedioGlobal(encuestas);
+        return DocenteReporteResponse.builder()
+                .docenteId(docente.getId())
+                .docenteNombre(docente.getNombreCompleto())
+                .numeroDocumento(docente.getNumeroDocumento())
+                .totalEncuestas(encuestas.size())
+                .promedioGeneral(round2(promedio))
+                .valoracion(EscalaValoracion.fromPromedio(promedio).getEtiqueta())
+                .evaluaciones(reportes)
+                .build();
+    }
+
+    /** Todas las respuestas de texto de un conjunto de encuestas. */
+    private List<DocenteReporteResponse.ComentarioItem> comentariosDe(
+            List<Encuesta> encuestas, Map<Long, PreguntaEvaluacion> preguntas) {
+        List<DocenteReporteResponse.ComentarioItem> items = new ArrayList<>();
+        for (Encuesta e : encuestas) {
+            for (RespuestaPregunta r : e.getRespuestas()) {
+                if (r.getTextoRespuesta() == null || r.getTextoRespuesta().isBlank()) continue;
+                PreguntaEvaluacion p = preguntas.get(r.getPreguntaId());
+                items.add(DocenteReporteResponse.ComentarioItem.builder()
+                        .encuestaId(e.getId())
+                        .numero(p != null ? p.getNumero() : null)
+                        .pregunta(p != null ? p.getTexto() : null)
+                        .texto(r.getTextoRespuesta())
+                        .sentimiento(r.getSentimiento() != null ? r.getSentimiento().name() : null)
+                        .sentimientoScore(r.getSentimientoScore())
+                        .sentimientoMetodo(r.getSentimientoMetodo() != null
+                                ? r.getSentimientoMetodo().name() : null)
+                        .build());
+            }
+        }
+        items.sort(Comparator.comparing(DocenteReporteResponse.ComentarioItem::getNumero,
+                Comparator.nullsLast(Comparator.naturalOrder())));
+        return items;
     }
 
     // ============================================================
