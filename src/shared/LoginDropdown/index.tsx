@@ -88,33 +88,19 @@ export const LoginDropdown = ({
         setError("");
 
         try {
-            /*
-            const response = await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        username: username.trim(),
-                        password,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error("LOGIN_FAILED");
-                }
-
-                navigate("/student-dashboard");
-             */
-
-            // Simulación temporal
             const authenticatedUser = await login({
                 username: username.trim(),
                 password,
             });
 
             onClose();
+            if (authenticatedUser.role !== "ESTUDIANTE") {
+                navigate("/evaluacion-docente", {
+                    replace: true,
+                });
+                return;
+            }
+
             if (!authenticatedUser.surveyCompleted) {
                 navigate("/percepcion-estudiantil", {
                     replace: true,

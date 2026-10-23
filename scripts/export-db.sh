@@ -8,13 +8,9 @@ DEST="$REPO_ROOT/db/init/01_academicore.sql"
 
 mkdir -p "$(dirname "$DEST")"
 
-echo "Generando pg_dump dentro del contenedor..."
+echo "Generando pg_dump (stdout -> repo)..."
 docker exec academicore-db pg_dump -U academicore -d academicore \
-    --no-owner --no-privileges --clean --if-exists \
-    -f /tmp/academicore_dump.sql
-
-echo "Copiando el dump al repo..."
-docker cp "academicore-db:/tmp/academicore_dump.sql" "$DEST"
+    --no-owner --no-privileges --clean --if-exists > "$DEST"
 
 SIZE=$(du -h "$DEST" | cut -f1)
 echo "Listo: $DEST ($SIZE)"

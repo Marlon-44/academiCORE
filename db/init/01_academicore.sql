@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict bkSrW967DAluL22xRqgfJ1cnPPXR4pb0CBiiHr0C1YEU5rE1D74n9AyBxAftZI2
+\restrict WMQoLcmnWJ86cHJNlx0DNZNwjDvWTrHsddgaA0A18wJlGmLrkkQFbe8b5gz70tl
 
 -- Dumped from database version 16.15
 -- Dumped by pg_dump version 16.15
@@ -18,6 +18,9 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE IF EXISTS ONLY public.usuario DROP CONSTRAINT IF EXISTS usuario_estudiante_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.usuario DROP CONSTRAINT IF EXISTS usuario_docente_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.sesion DROP CONSTRAINT IF EXISTS sesion_usuario_id_fkey;
 ALTER TABLE IF EXISTS ONLY public.respuesta_pregunta DROP CONSTRAINT IF EXISTS fk_respuesta_pregunta;
 ALTER TABLE IF EXISTS ONLY public.respuesta_pregunta DROP CONSTRAINT IF EXISTS fk_respuesta_encuesta;
 ALTER TABLE IF EXISTS ONLY public.requisito_plan_asignatura DROP CONSTRAINT IF EXISTS fk_requisito_tipo;
@@ -64,7 +67,12 @@ ALTER TABLE IF EXISTS ONLY public.campus DROP CONSTRAINT IF EXISTS fk_campus_uni
 ALTER TABLE IF EXISTS ONLY public.asignatura_naturaleza DROP CONSTRAINT IF EXISTS fk_asignatura_naturaleza_naturaleza;
 ALTER TABLE IF EXISTS ONLY public.asignatura_naturaleza DROP CONSTRAINT IF EXISTS fk_asignatura_naturaleza_asignatura;
 ALTER TABLE IF EXISTS ONLY public.asignatura DROP CONSTRAINT IF EXISTS fk_asignatura_departamento;
+DROP INDEX IF EXISTS public.idx_usuario_estudiante;
+DROP INDEX IF EXISTS public.idx_sesion_usuario;
+DROP INDEX IF EXISTS public.idx_sesion_token;
 DROP INDEX IF EXISTS public.flyway_schema_history_s_idx;
+ALTER TABLE IF EXISTS ONLY public.usuario DROP CONSTRAINT IF EXISTS usuario_username_key;
+ALTER TABLE IF EXISTS ONLY public.usuario DROP CONSTRAINT IF EXISTS usuario_pkey;
 ALTER TABLE IF EXISTS ONLY public.universidad DROP CONSTRAINT IF EXISTS uq_universidad_codigo;
 ALTER TABLE IF EXISTS ONLY public.tipo_requisito DROP CONSTRAINT IF EXISTS uq_tipo_requisito_codigo;
 ALTER TABLE IF EXISTS ONLY public.tipo_asignatura_plan DROP CONSTRAINT IF EXISTS uq_tipo_asignatura_codigo;
@@ -104,6 +112,8 @@ ALTER TABLE IF EXISTS ONLY public.asignatura DROP CONSTRAINT IF EXISTS uq_asigna
 ALTER TABLE IF EXISTS ONLY public.universidad DROP CONSTRAINT IF EXISTS universidad_pkey;
 ALTER TABLE IF EXISTS ONLY public.tipo_requisito DROP CONSTRAINT IF EXISTS tipo_requisito_pkey;
 ALTER TABLE IF EXISTS ONLY public.tipo_asignatura_plan DROP CONSTRAINT IF EXISTS tipo_asignatura_plan_pkey;
+ALTER TABLE IF EXISTS ONLY public.sesion DROP CONSTRAINT IF EXISTS sesion_token_key;
+ALTER TABLE IF EXISTS ONLY public.sesion DROP CONSTRAINT IF EXISTS sesion_pkey;
 ALTER TABLE IF EXISTS ONLY public.respuesta_pregunta DROP CONSTRAINT IF EXISTS respuesta_pregunta_pkey;
 ALTER TABLE IF EXISTS ONLY public.requisito_plan_asignatura DROP CONSTRAINT IF EXISTS requisito_plan_asignatura_pkey;
 ALTER TABLE IF EXISTS ONLY public.programa_campus DROP CONSTRAINT IF EXISTS programa_campus_pkey;
@@ -136,9 +146,15 @@ ALTER TABLE IF EXISTS ONLY public.campus DROP CONSTRAINT IF EXISTS campus_pkey;
 ALTER TABLE IF EXISTS ONLY public.aspirante DROP CONSTRAINT IF EXISTS aspirante_pkey;
 ALTER TABLE IF EXISTS ONLY public.asignatura DROP CONSTRAINT IF EXISTS asignatura_pkey;
 ALTER TABLE IF EXISTS ONLY public.asignatura_naturaleza DROP CONSTRAINT IF EXISTS asignatura_naturaleza_pkey;
+ALTER TABLE IF EXISTS public.usuario ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.sesion ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE IF EXISTS public.usuario_id_seq;
+DROP TABLE IF EXISTS public.usuario;
 DROP TABLE IF EXISTS public.universidad;
 DROP TABLE IF EXISTS public.tipo_requisito;
 DROP TABLE IF EXISTS public.tipo_asignatura_plan;
+DROP SEQUENCE IF EXISTS public.sesion_id_seq;
+DROP TABLE IF EXISTS public.sesion;
 DROP TABLE IF EXISTS public.respuesta_pregunta;
 DROP TABLE IF EXISTS public.requisito_plan_asignatura;
 DROP TABLE IF EXISTS public.programa_campus;
@@ -171,6 +187,21 @@ DROP TABLE IF EXISTS public.campus;
 DROP TABLE IF EXISTS public.aspirante;
 DROP TABLE IF EXISTS public.asignatura_naturaleza;
 DROP TABLE IF EXISTS public.asignatura;
+DROP EXTENSION IF EXISTS pgcrypto;
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -1099,6 +1130,38 @@ ALTER TABLE public.respuesta_pregunta ALTER COLUMN id ADD GENERATED ALWAYS AS ID
 
 
 --
+-- Name: sesion; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sesion (
+    id bigint NOT NULL,
+    token character varying(80) NOT NULL,
+    usuario_id bigint NOT NULL,
+    creado_en timestamp with time zone DEFAULT now() NOT NULL,
+    expira_en timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: sesion_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.sesion_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: sesion_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.sesion_id_seq OWNED BY public.sesion.id;
+
+
+--
 -- Name: tipo_asignatura_plan; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1174,6 +1237,59 @@ ALTER TABLE public.universidad ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY 
     NO MAXVALUE
     CACHE 1
 );
+
+
+--
+-- Name: usuario; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.usuario (
+    id bigint NOT NULL,
+    username character varying(60) NOT NULL,
+    password_hash character varying(100) NOT NULL,
+    rol character varying(20) NOT NULL,
+    nombre_mostrar character varying(300) NOT NULL,
+    estudiante_id bigint,
+    docente_id bigint,
+    estado character varying(20) DEFAULT 'ACTIVO'::character varying NOT NULL,
+    ultimo_acceso timestamp with time zone,
+    creado_en timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT usuario_estado_check CHECK (((estado)::text = ANY ((ARRAY['ACTIVO'::character varying, 'INACTIVO'::character varying])::text[]))),
+    CONSTRAINT usuario_rol_check CHECK (((rol)::text = ANY ((ARRAY['ADMIN'::character varying, 'ESTUDIANTE'::character varying, 'DOCENTE'::character varying])::text[])))
+);
+
+
+--
+-- Name: usuario_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.usuario_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: usuario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.usuario_id_seq OWNED BY public.usuario.id;
+
+
+--
+-- Name: sesion id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sesion ALTER COLUMN id SET DEFAULT nextval('public.sesion_id_seq'::regclass);
+
+
+--
+-- Name: usuario id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario ALTER COLUMN id SET DEFAULT nextval('public.usuario_id_seq'::regclass);
 
 
 --
@@ -1482,6 +1598,7 @@ COPY public.evaluacion_docente (id, docente_id, asignatura_id, programa_id, grup
 3	2	4	1	B1	2025-1	30	ABIERTA	2026-10-23 00:35:44.635934
 4	3	3	1	A2	2025-1	25	ABIERTA	2026-10-23 00:35:44.635934
 5	4	6	1	A1	2025-1	20	ABIERTA	2026-10-23 00:35:44.635934
+6	3	5	1	B2	2025-2	10	ABIERTA	2026-10-23 01:27:53.681217
 \.
 
 
@@ -1517,6 +1634,7 @@ COPY public.flyway_schema_history (installed_rank, version, description, type, s
 8	8	respuesta valor integer	SQL	V8__respuesta_valor_integer.sql	-234138541	academicore	2026-10-22 23:25:47.869255	243	t
 9	9	estudiantes inscripciones seed demo	SQL	V9__estudiantes_inscripciones_seed_demo.sql	-8144190	academicore	2026-10-23 00:35:44.373865	457	t
 10	10	ficha sia estudiante docente	SQL	V10__ficha_sia_estudiante_docente.sql	-2088700377	academicore	2026-10-23 00:46:42.250114	478	t
+11	11	usuarios sesiones auth	SQL	V11__usuarios_sesiones_auth.sql	1121539662	academicore	2026-10-23 01:24:09.219369	3345	t
 \.
 
 
@@ -1666,6 +1784,16 @@ COPY public.inscripcion_evaluacion (id, evaluacion_id, estudiante_id, fecha_insc
 118	5	48	2026-10-23 00:35:44.635934
 119	5	49	2026-10-23 00:35:44.635934
 120	5	50	2026-10-23 00:35:44.635934
+121	6	41	2026-10-23 01:27:53.699114
+122	6	42	2026-10-23 01:27:53.699114
+123	6	43	2026-10-23 01:27:53.699114
+124	6	44	2026-10-23 01:27:53.699114
+125	6	45	2026-10-23 01:27:53.699114
+126	6	46	2026-10-23 01:27:53.699114
+127	6	47	2026-10-23 01:27:53.699114
+128	6	48	2026-10-23 01:27:53.699114
+129	6	49	2026-10-23 01:27:53.699114
+130	6	50	2026-10-23 01:27:53.699114
 \.
 
 
@@ -3845,6 +3973,16 @@ COPY public.respuesta_pregunta (id, encuesta_id, pregunta_id, valor, texto_respu
 
 
 --
+-- Data for Name: sesion; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.sesion (id, token, usuario_id, creado_en, expira_en) FROM stdin;
+4	408bf2241b574b28bfb6ddac01c408f874557ec40d7a450191567d6f6e810f24	42	2026-10-23 01:27:57.419134+00	2026-10-23 09:27:57.419134+00
+5	26e0a332bbec47429746e4a34f5e0da98db249251472436eb6a427151b8214c1	2	2026-10-23 01:27:57.731077+00	2026-10-23 09:27:57.731077+00
+\.
+
+
+--
 -- Data for Name: tipo_asignatura_plan; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -3873,6 +4011,69 @@ COPY public.tipo_requisito (id, codigo, nombre) FROM stdin;
 
 COPY public.universidad (id, codigo, nombre, fecha_creacion, estado) FROM stdin;
 1	UDC	Universidad de Cartagena	2026-09-07	ACTIVA
+\.
+
+
+--
+-- Data for Name: usuario; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.usuario (id, username, password_hash, rol, nombre_mostrar, estudiante_id, docente_id, estado, ultimo_acceso, creado_en) FROM stdin;
+3	0222400002	$2a$10$rMnz3NrnvOLpH.kFYeKuO.m63eKbgA9D6rmEChjYw917s04dwopD.	ESTUDIANTE	ANDRES FELIPE MARTINEZ DIAZ SUAREZ	2	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+4	0222400003	$2a$10$GivbSyV6bFn4BrG9d2BvDOF07V3IPkgwqKSEdg/3JIKNNhM3GsgGK	ESTUDIANTE	LAURA VALENTINA GARCIA HERNANDEZ RODRIGUEZ	3	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+5	0222400004	$2a$10$UAN/rZYWyWMFZQuG.p.kjOuMNAqe3PLnI2rtj0805eORSvFSkDKR.	ESTUDIANTE	CARLOS ANDRES LOPEZ SANCHEZ RAMIREZ	4	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+6	0222400005	$2a$10$diIfFyLHXeNdZNQy7C.kJOgwRJXH1y7s.aYHR0HTVkZcc.S20cc76	ESTUDIANTE	ANA MARIA GONZALEZ RAMIREZ MORENO	5	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+7	0222400006	$2a$10$pjk8C/ftRFJ4aeHcjez2POksc5gzJgoIJyfpk2EupSdq7zlJT0qm.	ESTUDIANTE	LUIS MIGUEL HERNANDEZ TORRES MARTINEZ	6	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+8	0222400007	$2a$10$eVZ7ZPOa0nl.xN0LnQJi3eZowqaPT.lFZ/dCZr5PtmL4P6ASg8S2u	ESTUDIANTE	CAMILA DIAZ CASTRO CASTRO	7	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+9	0222400008	$2a$10$uP6Fhi5RtOdF6UDFLcZxB.SIlaHiX/0Q9F6yyuYkQ78XSnXo281fu	ESTUDIANTE	DIEGO ALEJANDRO RAMIREZ VARGAS ACOSTA	8	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+10	0222400009	$2a$10$1MhysIWRIDiZJQwJMZmvWuuWR2cQDi712eAzUx/XeBK6xgsUS35W.	ESTUDIANTE	VALENTINA CASTRO ORTIZ GARCIA	9	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+11	0222400010	$2a$10$gwvfcVrxErLrQobP.EjIHOeS4iWhr4tT1/K3xbDcTRhgyhIhPaIAe	ESTUDIANTE	SEBASTIAN TORRES MORENO TORRES	10	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+12	0222400011	$2a$10$/1bxhRGBEK44X7OgcTrtPu/wn0YzPZh8J7EuONtwjfEGWf2/bV75C	ESTUDIANTE	ISABELLA VARGAS CORTES ROJAS	11	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+13	0222400012	$2a$10$KuBvoHjDndfujtf.Qm2Keu5gvqtS6BUWXiOAfpLGfypKQwvAGEu9m	ESTUDIANTE	MATEO ORTIZ SUAREZ LOPEZ	12	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+14	0222400013	$2a$10$SZUQDFMGDVBrN10LCQuatOHnEPTV16TimCToQt/eAfOZD7nnh3xQu	ESTUDIANTE	SOFIA CORTES ACOSTA VARGAS	13	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+15	0222400014	$2a$10$/W.ygRCt7Wwf.Fup7sRdI.cddqH3txA7KrELyJexzNIEf0gTltnhK	ESTUDIANTE	NICOLAS SUAREZ MEJIA MEJIA	14	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+16	0222400015	$2a$10$8ncTBEARJpy/s6xaZO6va.ymPga9xIv2FONya3Bq3f7RU3mbNNTla	ESTUDIANTE	MARIA FERNANDA MORENO ROJAS GONZALEZ	15	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+17	0222400016	$2a$10$aYhtXsLrWD48iyKBgiraMe/KRpNIQBeA9tPHLrAV0pWlhoSoDt9v2	ESTUDIANTE	SANTIAGO ACOSTA PALACIOS ORTIZ	16	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+18	0222400017	$2a$10$glmi.867L1zF72nFRiWjW.qgdniFL3Of/ZKtReejM.6fKU5kvxgUG	ESTUDIANTE	GABRIELA ROJAS QUINTERO QUINTERO	17	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+19	0222400018	$2a$10$2DeGBrlrbJN7/absJPWcu.GLGgZVAwuFsDq/nPRs5ez4syjlI1cFC	ESTUDIANTE	DANIEL MEJIA ARANGO HERNANDEZ	18	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+20	0222400019	$2a$10$Nf4/9GYUIdZzgX5lO6Jnh.eVLnmjgepNSiakKuqWH.5jwC.IJzQeK	ESTUDIANTE	PAULA QUINTERO SOTO CORTES	19	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+21	0222400020	$2a$10$/eKFjZM/OD0PHNoSQeAG.OV.Ukj8334RdsAxzpib5s1HCccs6YSae	ESTUDIANTE	KEVIN PEREZ GOMEZ PEREZ	20	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+22	0222400021	$2a$10$J4SkBfEfQ0g3z5kdeoJLKuKLRlLqsLobSrjBbS94tZt2/9eIgobF2	ESTUDIANTE	MANUELA RODRIGUEZ LOPEZ DIAZ	21	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+23	0222400022	$2a$10$AgmQbhj6BGjiR19RCJA2LeRQUz.13s5T0LfczZfHjwuR./p/t5lZ.	ESTUDIANTE	ESTEBAN MARTINEZ DIAZ SUAREZ	22	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+24	0222400023	$2a$10$XW8CR36ILat3YlXVpjkhD.ZIO2hx/V3HU7gFEuAIhoalUpprYpVFy	ESTUDIANTE	JULIANA GARCIA HERNANDEZ RODRIGUEZ	23	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+25	0222400024	$2a$10$n5odSjEMD9RLxP6rCUWx8.uAZCVdw2yF3oROEWPXpFMyaulGSjnoe	ESTUDIANTE	OSCAR LOPEZ SANCHEZ RAMIREZ	24	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+26	0222400025	$2a$10$8NAz2ODEhRI6WUYMZsEIqeR2KYae6ONRsyQRaHUJhsy/aTLqIVuWC	ESTUDIANTE	JUAN CAMILO GONZALEZ RAMIREZ MORENO	25	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+27	0222400026	$2a$10$PRc9rumcZO1.b7RND9LvCuONz1/T.l2D6VLuWJauTE0fFEbtXwO4q	ESTUDIANTE	MARIA JOSE HERNANDEZ TORRES MARTINEZ	26	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+28	0222400027	$2a$10$Tz8bK2iQQaMNVwsDJxgSxOyYk03TmtouFxfHpv55fqAxX7Njhg//.	ESTUDIANTE	ANDRES FELIPE DIAZ CASTRO CASTRO	27	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+29	0222400028	$2a$10$5SNi3sNqLBrtQt3Lj0xi2Oa/2x5RfUBCdj3vKzDIo9CG3WP.a4e1O	ESTUDIANTE	LAURA VALENTINA RAMIREZ VARGAS ACOSTA	28	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+30	0222400029	$2a$10$o42TJgnPf5OdPkkuxJ0WAe0d7bQqPvmvC/uZuGZTrXM.II5EalJJu	ESTUDIANTE	CARLOS ANDRES CASTRO ORTIZ GARCIA	29	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+31	0222400030	$2a$10$ZdChmSPqYcbJGCC1jyV.Z.pry/.D5HPJgr.4qsKwOsPKlwPJvqUKm	ESTUDIANTE	ANA MARIA TORRES MORENO TORRES	30	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+32	0222400031	$2a$10$LZ92OAHHXjb6MpGWR0weneA2RTAYK9ifDlEjr6QerdpQABwm4oM5O	ESTUDIANTE	LUIS MIGUEL VARGAS CORTES ROJAS	31	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+33	0222400032	$2a$10$rZaAAFUhHI.CuHG03aK1qOTQsFYf6e858N2c1NQQlp0grNBS7VYzq	ESTUDIANTE	CAMILA ORTIZ SUAREZ LOPEZ	32	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+34	0222400033	$2a$10$V51HhAzM79FLjTDcy9cQVeec1U7YM3LOUzh2g6I5zl7YqKZtWmwpq	ESTUDIANTE	DIEGO ALEJANDRO CORTES ACOSTA VARGAS	33	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+35	0222400034	$2a$10$2PVnJI5uA8JYYMB9xhMHO.ZuJVLtc8irI9B5faSA6IMGamRXnTgaq	ESTUDIANTE	VALENTINA SUAREZ MEJIA MEJIA	34	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+36	0222400035	$2a$10$vZHjVB1lSho6jamMobOo.uFVxosi/bAQ91f0SA8PXciS43e5Wt3ji	ESTUDIANTE	SEBASTIAN MORENO ROJAS GONZALEZ	35	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+37	0222400036	$2a$10$pRevJfQFqvKIY2mT69m7I.8m1E50dFR0kh3gTJfKMknJzVm1nFh5S	ESTUDIANTE	ISABELLA ACOSTA PALACIOS ORTIZ	36	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+38	0222400037	$2a$10$D9q7zUFv94fkgh6C/zpV6evPSRcwjOXENpVduWvll.8YThNozGmx.	ESTUDIANTE	MATEO ROJAS QUINTERO QUINTERO	37	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+39	0222400038	$2a$10$Q9nNsagQFXmTDFy7RZDYkesZJCLYNPgmO6eelrZCFeJi.iflLcOFm	ESTUDIANTE	SOFIA MEJIA ARANGO HERNANDEZ	38	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+40	0222400039	$2a$10$2CQRDJ6FDYCBbWAmF8aoIOAJsVMwL.2qWZrGD3j6iOTM.uGLe.zWq	ESTUDIANTE	NICOLAS QUINTERO SOTO CORTES	39	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+41	0222400040	$2a$10$vC9jZE2QZa6N3t49WBvDweErgQ1bF25zJuNTTTCZaI.OQZ9tuZ9/i	ESTUDIANTE	MARIA FERNANDA PEREZ GOMEZ PEREZ	40	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+43	0222400042	$2a$10$H1NF/kTUp9xT6L01FMqjAepAETursrkPcRUBX9Av9N3beT0hSomzi	ESTUDIANTE	GABRIELA MARTINEZ DIAZ SUAREZ	42	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+44	0222400043	$2a$10$osZMMR/szTmrlLZYEkIyWOCfTyaovEm0lEdBRz5dbPmxowQNDZFE2	ESTUDIANTE	DANIEL GARCIA HERNANDEZ RODRIGUEZ	43	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+42	0222400041	$2a$10$c42Ttpbnnv.gwADtU5lurekdelvK2pdOKKrHtwvZ5EWpLqANp/0De	ESTUDIANTE	SANTIAGO RODRIGUEZ LOPEZ DIAZ	41	\N	ACTIVO	2026-10-23 01:27:57.294055+00	2026-10-23 01:24:09.266586+00
+45	0222400044	$2a$10$ybBDv0mZEYDF9BTNBipz8OAPi8LmjbQmbgF/ujUaKhMQm5INk1fe.	ESTUDIANTE	PAULA LOPEZ SANCHEZ RAMIREZ	44	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+46	0222400045	$2a$10$LjfACBkK.YGQbo2N4/RnPuIHmh4AeYI9QroochPQacSNyWqyiLkOO	ESTUDIANTE	KEVIN GONZALEZ RAMIREZ MORENO	45	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+47	0222400046	$2a$10$j76xm7SEvURNBN1Xj03VhuvD1X7ypmsbrXIm4ktJFWitf2nlwWt3e	ESTUDIANTE	MANUELA HERNANDEZ TORRES MARTINEZ	46	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+48	0222400047	$2a$10$rBbF071ut0unSapcbcp2x.4YYaz9OTUpc6IMEJJr3poP7R.b88DWS	ESTUDIANTE	ESTEBAN DIAZ CASTRO CASTRO	47	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+49	0222400048	$2a$10$hCTG6RSfqPWdQnX4FgJaR.98cWE5O31.JDSfEm/l1ruGJ/oOHDrz2	ESTUDIANTE	JULIANA RAMIREZ VARGAS ACOSTA	48	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+50	0222400049	$2a$10$nuy07D15V5rJ6XasbSMhReMnBqVHabWuCg1UQEdUzsdTN2HkVJmbC	ESTUDIANTE	OSCAR CASTRO ORTIZ GARCIA	49	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+51	0222400050	$2a$10$YMob7d.FtrjpjV3jOhVGsO8Odsa8vqa42wBAB2H6y88w0o1QYe9zu	ESTUDIANTE	JUAN CAMILO TORRES MORENO TORRES	50	\N	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+53	72104567	$2a$10$MkCHqA9.OnAjHj.qJ71DMuUIsRxZ64mK04LSiASbmCpQ3AoyzYB8y	DOCENTE	MARIA FERNANDA RUIZ CASTRO	\N	2	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+54	73098812	$2a$10$p69wrldNLAynTz3MZ3tHVOiBze/2.VmnEOTjg5oTDHKEfP7J52dG6	DOCENTE	CARLOS ALBERTO MENDOZA SIERRA	\N	3	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+55	10304566	$2a$10$YjOf3ka4n18TVKQe9l7cDu2WNX8Jv1NPFSImxA2hZXCFB86jNtnD2	DOCENTE	LUIS EDUARDO PATERNINA CUELLO	\N	4	ACTIVO	\N	2026-10-23 01:24:09.266586+00
+1	admin	$2a$10$RBNzxuMBcWYiWt0GfyIMi.QwUppdPNq3vEhw7czEyQE6QD1gPaVRC	ADMIN	Administrador del sistema	\N	\N	ACTIVO	2026-10-23 01:24:45.506446+00	2026-10-23 01:24:09.266586+00
+52	10301274	$2a$10$9O.rJVpB8YgCZMvf0yVvCe/SFj/Ksrb342n4IxHYbsLMqbpGZB5uW	DOCENTE	GABRIEL ELIAS CHANCHI GOLONDRINO	\N	1	ACTIVO	2026-10-23 01:25:05.586469+00	2026-10-23 01:24:09.266586+00
+2	0222400001	$2a$10$xKDdnF7vaeDJvvliRoLqneiUAEctXtYuBT8e2mq.gwFx9ZXZ81cgS	ESTUDIANTE	MARIA JOSE RODRIGUEZ LOPEZ DIAZ	1	\N	ACTIVO	2026-10-23 01:27:57.665088+00	2026-10-23 01:24:09.266586+00
 \.
 
 
@@ -3957,7 +4158,7 @@ SELECT pg_catalog.setval('public.estudiante_id_seq', 50, true);
 -- Name: evaluacion_docente_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.evaluacion_docente_id_seq', 5, true);
+SELECT pg_catalog.setval('public.evaluacion_docente_id_seq', 6, true);
 
 
 --
@@ -3985,7 +4186,7 @@ SELECT pg_catalog.setval('public.imagen_campus_id_seq', 5, true);
 -- Name: inscripcion_evaluacion_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.inscripcion_evaluacion_id_seq', 120, true);
+SELECT pg_catalog.setval('public.inscripcion_evaluacion_id_seq', 130, true);
 
 
 --
@@ -4080,6 +4281,13 @@ SELECT pg_catalog.setval('public.respuesta_pregunta_id_seq', 2040, true);
 
 
 --
+-- Name: sesion_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.sesion_id_seq', 5, true);
+
+
+--
 -- Name: tipo_asignatura_plan_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -4098,6 +4306,13 @@ SELECT pg_catalog.setval('public.tipo_requisito_id_seq', 3, true);
 --
 
 SELECT pg_catalog.setval('public.universidad_id_seq', 1, true);
+
+
+--
+-- Name: usuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.usuario_id_seq', 55, true);
 
 
 --
@@ -4354,6 +4569,22 @@ ALTER TABLE ONLY public.requisito_plan_asignatura
 
 ALTER TABLE ONLY public.respuesta_pregunta
     ADD CONSTRAINT respuesta_pregunta_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sesion sesion_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sesion
+    ADD CONSTRAINT sesion_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sesion sesion_token_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sesion
+    ADD CONSTRAINT sesion_token_key UNIQUE (token);
 
 
 --
@@ -4669,10 +4900,47 @@ ALTER TABLE ONLY public.universidad
 
 
 --
+-- Name: usuario usuario_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: usuario usuario_username_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_username_key UNIQUE (username);
+
+
+--
 -- Name: flyway_schema_history_s_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
+
+
+--
+-- Name: idx_sesion_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sesion_token ON public.sesion USING btree (token);
+
+
+--
+-- Name: idx_sesion_usuario; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sesion_usuario ON public.sesion USING btree (usuario_id);
+
+
+--
+-- Name: idx_usuario_estudiante; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_usuario_estudiante ON public.usuario USING btree (estudiante_id);
 
 
 --
@@ -5044,8 +5312,32 @@ ALTER TABLE ONLY public.respuesta_pregunta
 
 
 --
+-- Name: sesion sesion_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sesion
+    ADD CONSTRAINT sesion_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuario(id) ON DELETE CASCADE;
+
+
+--
+-- Name: usuario usuario_docente_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_docente_id_fkey FOREIGN KEY (docente_id) REFERENCES public.docente(id) ON DELETE SET NULL;
+
+
+--
+-- Name: usuario usuario_estudiante_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_estudiante_id_fkey FOREIGN KEY (estudiante_id) REFERENCES public.estudiante(id) ON DELETE SET NULL;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict bkSrW967DAluL22xRqgfJ1cnPPXR4pb0CBiiHr0C1YEU5rE1D74n9AyBxAftZI2
+\unrestrict WMQoLcmnWJ86cHJNlx0DNZNwjDvWTrHsddgaA0A18wJlGmLrkkQFbe8b5gz70tl
 

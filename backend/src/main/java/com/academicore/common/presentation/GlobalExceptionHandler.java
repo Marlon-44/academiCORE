@@ -1,5 +1,6 @@
 package com.academicore.common.presentation;
 
+import com.academicore.auth.domain.exception.UnauthorizedException;
 import com.academicore.pensum.domain.exception.BusinessException;
 import com.academicore.pensum.domain.exception.ConflictException;
 import com.academicore.pensum.domain.exception.NotFoundException;
@@ -23,6 +24,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex);
     }
 
     @ExceptionHandler(BusinessException.class)

@@ -14,6 +14,7 @@ import com.academicore.evaluacion.application.dto.DocenteResponse;
 import com.academicore.evaluacion.application.dto.EncuestaGraficaResponse;
 import com.academicore.evaluacion.application.dto.EncuestaResponse;
 import com.academicore.evaluacion.application.dto.EstudianteResponse;
+import com.academicore.evaluacion.application.dto.EvaluacionEstudianteResponse;
 import com.academicore.evaluacion.application.dto.EvaluacionGraficasResponse;
 import com.academicore.evaluacion.application.dto.EvaluacionResponse;
 import com.academicore.evaluacion.application.dto.PreguntaResponse;
@@ -133,6 +134,16 @@ public class EvaluacionDocenteController {
             + "(vista administrativa: una encuesta por evaluación respondida)")
     public ResponseEntity<List<EncuestaResponse>> encuestasDeEstudiante(@PathVariable Long id) {
         return ResponseEntity.ok(encuestaUseCase.listarPorEstudiante(id));
+    }
+
+    @GetMapping("/estudiantes/{id}/evaluaciones")
+    @Operation(summary = "Evaluaciones del estudiante (vista del estudiante)",
+            description = "Lista las evaluaciones en las que está inscrito con docente, "
+                    + "asignatura, grupo, estado y si ya las contestó "
+                    + "(contestada + encuestaId). Sirve para la vista 'mis evaluaciones' del estudiante.")
+    public ResponseEntity<List<EvaluacionEstudianteResponse>> evaluacionesDeEstudiante(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(estudianteUseCase.evaluacionesDe(id));
     }
 
     // ============================================================

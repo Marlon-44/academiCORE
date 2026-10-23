@@ -8,19 +8,16 @@ import {
     type ReactNode,
 } from "react";
 
+import {
+    loginRequest,
+    logoutRequest,
+    meRequest,
+    type AuthUser,
+    type LoginCredentials,
+} from "../services/authApi";
 
-interface User {
-    id: string;
-    username: string;
-    name: string;
-    role: string;
-    surveyCompleted: boolean;
-}
 
-interface LoginCredentials {
-    username: string;
-    password: string;
-}
+type User = AuthUser;
 
 interface AuthContextValue {
     user: User | null;
@@ -44,25 +41,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const checkSession = useCallback(async () => {
         try {
-            /*
-             * Cuando el backend esté listo:
-             *
-             * const response = await fetch("/api/auth/me", {
-             *     method: "GET",
-             *     credentials: "include",
-             * });
-             *
-             * if (!response.ok) {
-             *     setUser(null);
-             *     return;
-             * }
-             *
-             * const data = await response.json();
-             * setUser(data.user);
-             */
-
-            // Temporal mientras no existe el backend
-            setUser(null);
+            const currentUser = await meRequest();
+            setUser(currentUser);
         } catch {
             setUser(null);
         } finally {
@@ -71,52 +51,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }, []);
 
     const login = useCallback(
-        async ({ username, password }: LoginCredentials) => {
-            /*
-             * Backend real:
-             *
-             * const response = await fetch("/api/auth/login", {
-             *     method: "POST",
-             *     headers: {
-             *         "Content-Type": "application/json",
-             *     },
-             *     credentials: "include",
-             *     body: JSON.stringify({
-             *         username,
-             *         password,
-             *     }),
-             * });
-             *
-             * if (!response.ok) {
-             *     throw new Error("INVALID_CREDENTIALS");
-             * }
-             *
-             * await checkSession();
-             */
-
-            // ------------------------------------------------
-            // MOCK TEMPORAL - SOLO PARA DESARROLLO
-            // ------------------------------------------------
-
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            if (username !== "admin" || password !== "123456") {
-                throw new Error("INVALID_CREDENTIALS");
-            }
-
-            const authenticatedUser: User = {
-                id: "1",
-                username: "admin",
-                name: "Marlon",
-                role: "ADMIN",
-                surveyCompleted: false,
-            };
-
+        async (credentials: LoginCredentials) => {
+            const authenticatedUser = await loginRequest(credentials);
             setUser(authenticatedUser);
-
             return authenticatedUser;
         },
-        [checkSession]
+        []
     );
 
 
@@ -136,14 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const logout = useCallback(async () => {
         try {
-            /*
-             * Backend real:
-             *
-             * await fetch("/api/auth/logout", {
-             *     method: "POST",
-             *     credentials: "include",
-             * });
-             */
+            await logoutRequest();
         } finally {
             setUser(null);
         }

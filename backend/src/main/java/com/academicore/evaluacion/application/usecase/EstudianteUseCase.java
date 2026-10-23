@@ -2,9 +2,11 @@ package com.academicore.evaluacion.application.usecase;
 
 import com.academicore.evaluacion.application.dto.CrearEstudianteRequest;
 import com.academicore.evaluacion.application.dto.EstudianteResponse;
+import com.academicore.evaluacion.application.dto.EvaluacionEstudianteResponse;
 import com.academicore.evaluacion.domain.model.Estudiante;
 import com.academicore.evaluacion.domain.repository.CatalogoAcademicoPort;
 import com.academicore.evaluacion.domain.repository.EstudianteRepository;
+import com.academicore.evaluacion.domain.repository.EvaluacionesEstudiantePort;
 import com.academicore.evaluacion.domain.repository.InscripcionEvaluacionRepository;
 import com.academicore.evaluacion.domain.repository.EvaluacionDocenteRepository;
 import com.academicore.pensum.domain.exception.ConflictException;
@@ -23,6 +25,7 @@ public class EstudianteUseCase {
     private final InscripcionEvaluacionRepository inscripcionRepository;
     private final EvaluacionDocenteRepository evaluacionRepository;
     private final CatalogoAcademicoPort catalogoAcademico;
+    private final EvaluacionesEstudiantePort evaluacionesEstudiante;
 
     @Transactional(readOnly = true)
     public List<EstudianteResponse> listar() {
@@ -67,6 +70,15 @@ public class EstudianteUseCase {
         List<Long> ids = inscripcionRepository.findEstudianteIdsByEvaluacionId(evaluacionId);
         return estudianteRepository.findAllById(ids).stream()
                 .map(this::toResponse)
+                .toList();
+    }
+
+    /** Vista del estudiante: sus evaluaciones inscritas y si ya las respondió. */
+    @Transactional(readOnly = true)
+    public List<EvaluacionEstudianteResponse> evaluacionesDe(Long estudianteId) {
+        buscar(estudianteId);
+        return evaluacionesEstudiante.listar(estudianteId).stream()
+                .map(EvaluacionEstudianteResponse::of)
                 .toList();
     }
 

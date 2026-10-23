@@ -3,7 +3,58 @@
 Base URL: `http://localhost:8080/api/v1/evaluacion-docente`
 
 Documentación interactiva (probar endpoints en vivo):
-**Swagger UI → http://localhost:8080/swagger-ui.html** (grupo "Evaluación Docente")
+**Swagger UI → http://localhost:8080/swagger-ui.html** (grupos "Evaluación Docente" y "Autenticación")
+
+---
+
+## Autenticación
+
+Base URL: `http://localhost:8080/api/auth`
+
+La sesión viaja en la cookie HttpOnly `academicore_session` (8 h). El frontend debe enviar
+`credentials: "include"` en cada fetch. Roles: `ADMIN` · `ESTUDIANTE` · `DOCENTE`.
+
+**Usuarios demo precargados:**
+
+| Rol | Usuario | Contraseña |
+|---|---|---|
+| ADMIN | `admin` | `admin123` |
+| ESTUDIANTE | `0222400001` … `0222400050` (código) | `10000001` … `10000050` (documento) |
+| DOCENTE | `10301274`, `72104567`, `73098812`, `10304566` (documento) | mismo número de documento |
+
+### `POST /login`
+Autentica y crea la sesión (cookie `Set-Cookie` en la respuesta).
+
+**Body:**
+```json
+{ "username": "admin", "password": "admin123" }
+```
+**Respuesta 200:**
+```json
+{
+  "id": 1,
+  "username": "admin",
+  "name": "Administrador del sistema",
+  "role": "ADMIN",
+  "estudianteId": null,
+  "docenteId": null,
+  "surveyCompleted": true
+}
+```
+- `estudianteId`/`docenteId`: vínculo al actor; `null` en ADMIN.
+- `surveyCompleted`: `true` si el estudiante respondió todas sus evaluaciones inscritas (siempre `true` para ADMIN/DOCENTE).
+
+**Errores:** `401` credenciales inválidas o usuario inactivo · `400` body incompleto.
+
+### `GET /me`
+Devuelve el usuario de la sesión actual (requiere la cookie).
+
+**Respuesta 200:** mismo JSON del login · **`401`** sin sesión o expirada.
+
+### `POST /logout`
+Elimina la sesión del servidor y expira la cookie. **Respuesta:** `204`.
+
+---
 
 ## Modelos
 
@@ -102,6 +153,28 @@ Lista todos los estudiantes con ficha completa: `codigo`, `numeroDocumento`,
 
 ### `GET /estudiantes/{id}`
 Detalle de un estudiante.
+
+### `GET /estudiantes/{id}/evaluaciones`
+Vista del estudiante: las evaluaciones en las que está inscrito, pendientes primero.
+Es la fuente de datos para la pantalla "mis evaluaciones" del estudiante.
+
+**Respuesta 200** — lista de:
+```json
+{
+  "evaluacionId": 6,
+  "estado": "ABIERTA",                    // ABIERTA | CERRADA
+  "grupo": "B2",
+  "periodo": "2025-2",
+  "docenteId": 3,
+  "docenteNombre": "CARLOS ALBERTO MENDOZA SIERRA",
+  "asignaturaId": 5,
+  "asignaturaCodigo": "EP1301",
+  "asignaturaNombre": "Ingeniería de Software I",
+  "programaNombre": "INGENIERÍA DE SISTEMAS",
+  "contestada": false,                    // false = pendiente por responder
+  "encuestaId": null                      // id de su encuesta si ya respondió
+}
+```
 
 ### `GET /estudiantes/{id}/encuestas`
 Vista administrativa: **el detalle de cada encuesta que respondió el
