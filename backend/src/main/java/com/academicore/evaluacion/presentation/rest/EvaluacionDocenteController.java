@@ -40,9 +40,9 @@ import java.util.List;
 @RequestMapping("/api/v1/evaluacion-docente")
 @RequiredArgsConstructor
 @Tag(name = "Evaluación Docente",
-     description = "Instrumento de evaluación docente administrable (preguntas Likert 1-5 "
-             + "y de texto abierto) con análisis de sentimiento por respuesta de texto "
-             + "y datos listos para graficar")
+     description = "Instrumento de evaluación docente administrable (SIG Percepción "
+             + "Estudiantil: Likert 1-4 y texto abierto) con análisis de sentimiento "
+             + "por respuesta de texto y datos listos para graficar")
 public class EvaluacionDocenteController {
 
     private final DocenteUseCase docenteUseCase;
