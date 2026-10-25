@@ -1,136 +1,279 @@
-# API — Evaluación Docente
+# API — Evaluación Docente (academiCORE)
 
-Base URL: `http://localhost:8080/api/v1/evaluacion-docente`
+Documento completo del proceso de evaluación docente: autenticación, usuarios,
+actores (docente, estudiante, asignatura), instrumento PVD003 administrable,
+evaluaciones por grupo, encuestas con análisis de sentimiento y reportes/gráficas.
 
-Documentación interactiva (probar endpoints en vivo):
-**Swagger UI → http://localhost:8080/swagger-ui.html** (grupos "Evaluación Docente" y "Autenticación")
+| | URL |
+|---|---|
+| API evaluación docente | `http://localhost:8080/api/v1/evaluacion-docente` |
+| API autenticación | `http://localhost:8080/api/auth` |
+| Swagger UI (probar en vivo) | `http://localhost:8080/swagger-ui.html` |
+| Frontend | `http://localhost:3002` |
+
+**Datos demo cargados:** 4 docentes · 50 estudiantes · 6 asignaturas ·
+6 evaluaciones (grupos de 20/25/30/10) · 120 encuestas respondidas ·
+55 usuarios con roles.
 
 ---
 
-## Autenticación
+## 1. Autenticación y usuarios
 
-Base URL: `http://localhost:8080/api/auth`
+La sesión viaja en la cookie HttpOnly `academicore_session` (válida 8 h).
+El frontend debe enviar `credentials: "include"` en cada `fetch` y el CORS
+ya está configurado con `allowCredentials` para `:3000`, `:3002` y `:5173`.
 
-La sesión viaja en la cookie HttpOnly `academicore_session` (8 h). El frontend debe enviar
-`credentials: "include"` en cada fetch. Roles: `ADMIN` · `ESTUDIANTE` · `DOCENTE`.
+### Cuentas demo
 
-**Usuarios demo precargados:**
+| Rol | Usuario | Contraseña | Qué ve al entrar |
+|---|---|---|---|
+| `ADMIN` | `admin` | `admin123` | Dashboard `/evaluacion-docente` |
+| `ESTUDIANTE` | `0222400001` … `0222400050` (código) | `10000001` … `10000050` (su documento) | Encuestas pendientes o su dashboard |
+| `DOCENTE` | `10301274` `72104567` `73098812` `10304566` | mismo número de documento | Dashboard |
 
-| Rol | Usuario | Contraseña |
-|---|---|---|
-| ADMIN | `admin` | `admin123` |
-| ESTUDIANTE | `0222400001` … `0222400050` (código) | `10000001` … `10000050` (documento) |
-| DOCENTE | `10301274`, `72104567`, `73098812`, `10304566` (documento) | mismo número de documento |
+**Estudiantes con encuesta PENDIENTE** (inscritos en evaluación 6, grupo B2, periodo 2025-2):
 
-### `POST /login`
-Autentica y crea la sesión (cookie `Set-Cookie` en la respuesta).
+`0222400041`–`0222400050` → claves `10000041`–`10000050`.
+Estos entran con `surveyCompleted: false` → van a la vista de encuesta.
+Los demás (`…001`–`…040`) ya respondieron todo → `surveyCompleted: true` → dashboard.
+
+### `POST /api/auth/login`
+
+Autentica credenciales y crea la sesión (la cookie llega en `Set-Cookie`).
 
 **Body:**
 ```json
-{ "username": "admin", "password": "admin123" }
+{ "username": "0222400041", "password": "10000041" }
 ```
+
 **Respuesta 200:**
 ```json
 {
-  "id": 1,
-  "username": "admin",
-  "name": "Administrador del sistema",
-  "role": "ADMIN",
-  "estudianteId": null,
+  "id": 42,
+  "username": "0222400041",
+  "name": "SANTIAGO RODRIGUEZ LOPEZ DIAZ",
+  "role": "ESTUDIANTE",
+  "estudianteId": 41,
   "docenteId": null,
-  "surveyCompleted": true
+  "surveyCompleted": false
 }
 ```
-- `estudianteId`/`docenteId`: vínculo al actor; `null` en ADMIN.
-- `surveyCompleted`: `true` si el estudiante respondió todas sus evaluaciones inscritas (siempre `true` para ADMIN/DOCENTE).
+
+| Campo | Significado |
+|---|---|
+| `role` | `ADMIN` · `ESTUDIANTE` · `DOCENTE` — define el "roleo" del frontend |
+| `estudianteId` | id para consultar sus evaluaciones/encuestas (`null` si no es estudiante) |
+| `docenteId` | id del docente (`null` si no aplica) |
+| `surveyCompleted` | `true` cuando respondió TODAS sus evaluaciones inscritas; `true` siempre para ADMIN/DOCENTE |
 
 **Errores:** `401` credenciales inválidas o usuario inactivo · `400` body incompleto.
 
-### `GET /me`
-Devuelve el usuario de la sesión actual (requiere la cookie).
+### `GET /api/auth/me`
+Devuelve el usuario de la sesión actual (mismo JSON del login). **`401`** sin sesión o expirada.
 
-**Respuesta 200:** mismo JSON del login · **`401`** sin sesión o expirada.
-
-### `POST /logout`
-Elimina la sesión del servidor y expira la cookie. **Respuesta:** `204`.
+### `POST /api/auth/logout`
+Elimina la sesión del servidor y expira la cookie. **Respuesta `204`.**
 
 ---
 
-## Modelos
+## 2. Modelos del dominio
 
-| Tipo de pregunta | Descripción |
-|---|---|
-| `LIKERT` | Escala numérica 1–5 (las 15 del formato PVD003) |
-| `TEXTO` | Respuesta abierta; recibe análisis de sentimiento automático |
+### Docente
+```json
+{
+  "id": 1,
+  "numeroDocumento": "10301274",
+  "sexo": "MASCULINO",
+  "nombres": "GABRIEL ELIAS",
+  "apellidos": "CHANCHI GOLONDRINO",
+  "nombreCompleto": "GABRIEL ELIAS CHANCHI GOLONDRINO",
+  "email": "chanchi@unicartagena.edu.co",
+  "telefono": "3174501234",
+  "direccion": "URBANIZACIÓN EL COUNTRY CALLE 12 #8-45",
+  "tipoVinculacion": "PLANTA_TIEMPO_COMPLETO",
+  "escalafon": "TITULAR",
+  "nivelFormacion": "DOCTORADO",
+  "departamentoId": 1,
+  "departamentoCodigo": "DCC",
+  "departamentoNombre": "Departamento de Ciencias de la Computación",
+  "fechaIngreso": "2015-02-01",
+  "estado": "ACTIVO"
+}
+```
+
+### Estudiante (ficha estilo SIA)
+```json
+{
+  "id": 36,
+  "codigo": "0222400036",
+  "numeroDocumento": "10000036",
+  "sexo": "FEMENINO",
+  "nombres": "ISABELLA",
+  "apellidos": "ACOSTA PALACIOS ORTIZ",
+  "nombreCompleto": "ISABELLA ACOSTA PALACIOS ORTIZ",
+  "email": "iacosta36@unicartagena.edu.co",
+  "telefono": "3181715408",
+  "direccion": "TRANSVERSAL 54 #30-18 LOZANO",
+  "programaId": 1,
+  "programaCodigo": "022",
+  "programaNombre": "INGENIERÍA DE SISTEMAS",
+  "semestre": 7,
+  "estadoAcademico": "NORMAL",
+  "estadoIngreso": "NO ESPECIFICA",
+  "planEstudiosId": 1,
+  "planCodigo": "P2010",
+  "planNombre": "Reforma Pénsum 2010",
+  "estado": "ACTIVO"
+}
+```
+
+### Asignatura
+Viene del catálogo de pensum (no se crea por esta API; se referencia por `asignaturaId`).
+En los DTOs aparece embebida:
+```json
+{ "asignaturaId": 1, "asignaturaCodigo": "EP1303", "asignaturaNombre": "Interacción Humano Computador" }
+```
+Asignaturas sembradas: `1 EP1303` IHC · `2 2222123` Electiva Software Libre ·
+`3 EP1102` Programación II · `4 EP2201` Bases de Datos · `5 EP1301` Ing. Software I · `6 EP2103` Redes.
+
+### Evaluación (grupo que se evalúa)
+```json
+{
+  "id": 1,
+  "docenteId": 1,
+  "docenteNombre": "GABRIEL ELIAS CHANCHI GOLONDRINO",
+  "asignaturaId": 1,
+  "asignaturaCodigo": "EP1303",
+  "asignaturaNombre": "Interacción Humano Computador",
+  "programaId": 1,
+  "grupo": "A1",
+  "periodo": "2025-1",
+  "estudiantesEsperados": 20,
+  "encuestasRespondidas": 20,
+  "estado": "ABIERTA",
+  "fechaCreacion": "2026-10-23T00:35:44.635934"
+}
+```
+
+### Encuesta (una respuesta de estudiante por evaluación)
+```json
+{
+  "id": 1,
+  "evaluacionId": 1,
+  "estudianteId": 1,
+  "estudianteNombre": "MARIA JOSE RODRIGUEZ LOPEZ DIAZ",
+  "estudianteDocumento": "10000001",
+  "fechaRespuesta": "2026-10-23T00:39:09.831523",
+  "promedio": 3.4,
+  "valoracion": "Regular",
+  "respuestas": [
+    { "preguntaId": 1,  "valor": 2, "textoRespuesta": null, "sentimiento": null, "sentimientoScore": null, "sentimientoMetodo": null },
+    { "preguntaId": 16, "valor": null, "textoRespuesta": "Más horas de consulta, porque las que tiene se llenan de inmediato.", "sentimiento": "POSITIVO", "sentimientoScore": 0.3924, "sentimientoMetodo": "MODELO" }
+  ]
+}
+```
+
+### Pregunta y categoría
+```json
+{ "id": 1, "numero": 1, "texto": "¿El docente articula los contenidos del curso...?",
+  "tipo": "LIKERT", "categoriaCodigo": "CONCEPTUAL", "categoriaNombre": "Conceptual", "estado": "ACTIVA" }
+```
+```json
+{ "id": 4, "codigo": "COMENTARIOS", "nombre": "Comentarios abiertos", "orden": 4, "totalPreguntas": 2 }
+```
+
+### Valores enumerados
 
 | Campo | Valores |
 |---|---|
+| `tipo` (pregunta) | `LIKERT` (numérica 1–5) · `TEXTO` (abierta, con sentimiento) |
+| `estado` (pregunta) | `ACTIVA` · `INACTIVA` |
+| `estado` (evaluación) | `ABIERTA` (acepta encuestas) · `CERRADA` |
 | `sentimiento` | `POSITIVO` · `NEUTRO` · `NEGATIVO` |
-| `sentimientoMetodo` | `MODELO` (microservicio Python) · `LEXICO` (fallback local) |
-| `valoracion` | `DEFICIENTE` · `REGULAR` · `BUENO` · `MUY_BUENO` · `EXCELENTE` |
+| `sentimientoMetodo` | `MODELO` (transformer en el microservicio) · `LEXICO` (fallback local) |
+| `valoracion` | `Deficiente` · `Regular` · `Bueno` · `Muy bueno` · `Excelente` |
+| `tipoVinculacion` | `PLANTA_TIEMPO_COMPLETO` · `PLANTA_MEDIO_TIEMPO` · `OCASIONAL` · `CATEDRA` |
+| `escalafon` | `AUXILIAR` · `ASISTENTE` · `ASOCIADO` · `TITULAR` |
+| `nivelFormacion` | `PREGRADO` · `ESPECIALIZACION` · `MAESTRIA` · `DOCTORADO` · `POSTDOCTORADO` |
+| `estado` (docente/estudiante) | `ACTIVO` · `INACTIVO` |
 
 ---
 
-## Docentes
+## 3. Docentes
 
 ### `POST /docentes`
 Registra un docente evaluable con su ficha laboral.
 
-**Body:**
+**Body** (`numeroDocumento`, `nombres`, `apellidos` requeridos):
 ```json
 {
-  "numeroDocumento": "10301274",      // requerido, único
-  "sexo": "MASCULINO",                // MASCULINO | FEMENINO | OTRO
-  "nombres": "GABRIEL ELIAS",         // requerido
-  "apellidos": "CHANCHI GOLONDRINO",  // requerido
+  "numeroDocumento": "10301274",
+  "sexo": "MASCULINO",
+  "nombres": "GABRIEL ELIAS",
+  "apellidos": "CHANCHI GOLONDRINO",
   "email": "chanchi@unicartagena.edu.co",
   "telefono": "3174501234",
   "direccion": "URB. EL COUNTRY CALLE 12 #8-45",
-  "tipoVinculacion": "PLANTA_TIEMPO_COMPLETO", // PLANTA_TIEMPO_COMPLETO | PLANTA_MEDIO_TIEMPO | OCASIONAL | CATEDRA
-  "escalafon": "TITULAR",             // AUXILIAR | ASISTENTE | ASOCIADO | TITULAR
-  "nivelFormacion": "DOCTORADO",      // PREGRADO | ESPECIALIZACION | MAESTRIA | DOCTORADO | POSTDOCTORADO
-  "departamentoId": 1,                // departamento de adscripción
+  "tipoVinculacion": "PLANTA_TIEMPO_COMPLETO",
+  "escalafon": "TITULAR",
+  "nivelFormacion": "DOCTORADO",
+  "departamentoId": 1,
   "fechaIngreso": "2015-02-01"
 }
 ```
-**Respuesta 201:** ficha completa incl. `departamentoCodigo/departamentoNombre` resueltos del catálogo.
+**Respuesta 201:** ficha completa del modelo Docente. **Errores:** `409` documento duplicado.
 
 ### `GET /docentes`
-Lista docentes. **Query opcional:** `?estado=ACTIVO|INACTIVO`
+Lista docentes. **Query:** `?estado=ACTIVO|INACTIVO` (opcional).
 
 ### `GET /docentes/{id}`
-Detalle de un docente. **Path:** `id` del docente.
+Detalle de un docente (modelo completo). `404` si no existe.
 
 ### `PATCH /docentes/{id}/estado`
-Activa/inactiva un docente.
-
-**Body:** `{ "estado": "ACTIVO" }` — valores `ACTIVO` | `INACTIVO`
+Activa/inactiva. **Body:** `{ "estado": "ACTIVO" }` → `ACTIVO` | `INACTIVO`.
 
 ### `GET /docentes/{id}/graficas`
-Gráficas globales del docente (todas sus materias o una en específico).
+Gráficas globales del docente. **Query opcional:** `?asignaturaId=` limita a una materia.
 
-**Path:** `id` del docente · **Query opcional:** `?asignaturaId={id}` limita a una materia.
-
-**Respuesta:** promedio general + valoración, radar por categoría, comparativo por materia/grupo/periodo, evolución por periodo, pie de sentimientos + score promedio, nube de palabras, fortalezas y oportunidades (top 3 preguntas).
+**Respuesta 200:**
+```json
+{
+  "docenteId": 1,
+  "docenteNombre": "GABRIEL ELIAS CHANCHI GOLONDRINO",
+  "numeroDocumento": "10301274",
+  "totalEncuestas": 45,
+  "promedioGeneral": 3.66,
+  "valoracion": "Bueno",
+  "radarCategorias": { "labels": ["CONCEPTUAL","PEDAGOGICO","RELACIONES"], "valores": [3.6, 3.7, 3.7] },
+  "comparativoMaterias": [
+    { "evaluacionId": 1, "asignaturaCodigo": "EP1303", "asignaturaNombre": "Interacción Humano Computador",
+      "grupo": "A1", "periodo": "2025-1", "promedio": 3.74, "respondidas": 20 }
+  ],
+  "evolucionPeriodos": { "labels": ["2025-1"], "valores": [3.66] },
+  "sentimientos": { "labels": ["POSITIVO","NEUTRO","NEGATIVO"], "valores": [87, 0, 3] },
+  "promedioSentimiento": 0.75,
+  "fortalezas":    [{ "numero": 12, "texto": "¿El docente es puntual...?", "categoria": "RELACIONES", "promedio": 3.8 }],
+  "oportunidades": [{ "numero": 3,  "texto": "¿El docente desarrolla...?", "categoria": "CONCEPTUAL", "promedio": 3.42 }],
+  "wordCloud": [{ "texto": "aunque", "peso": 10 }]
+}
+```
+`comparativoMaterias`: una entrada por evaluación/grupo · `fortalezas`/`oportunidades`: top 3 preguntas mejor/peor calificadas.
 
 ### `GET /docentes/{id}/reporte`
-Reporte completo para el docente: **todas las respuestas de texto** que los
-estudiantes escribieron sobre él, agrupadas por evaluación.
+Reporte completo: **todos los comentarios de texto** que los estudiantes escribieron,
+agrupados por evaluación. **Query opcional:** `?asignaturaId=`.
 
-**Path:** `id` del docente · **Query opcional:** `?asignaturaId={id}` limita a una materia.
-
-**Respuesta:**
 ```json
 {
   "docenteId": 1, "docenteNombre": "...", "totalEncuestas": 45,
-  "promedioGeneral": 3.66, "valoracion": "BUENO",
+  "promedioGeneral": 3.66, "valoracion": "Bueno",
   "evaluaciones": [{
-    "evaluacionId": 1, "asignaturaCodigo": "EP1303", "grupo": "A1",
-    "periodo": "2025-1", "encuestas": 20, "promedio": 3.9,
+    "evaluacionId": 1, "asignaturaCodigo": "EP1303", "asignaturaNombre": "Interacción Humano Computador",
+    "grupo": "A1", "periodo": "2025-1", "encuestas": 20, "promedio": 3.74,
     "comentarios": [{
-      "encuestaId": 5, "numero": 16, "pregunta": "¿Qué aspectos...?",
-      "texto": "Debería...", "sentimiento": "NEUTRO",
-      "sentimientoScore": 0.51, "sentimientoMetodo": "MODELO"
+      "encuestaId": 1, "numero": 16, "pregunta": "¿Qué aspectos considera que debe mejorar...?",
+      "texto": "Más horas de consulta...", "sentimiento": "POSITIVO",
+      "sentimientoScore": 0.3924, "sentimientoMetodo": "MODELO"
     }]
   }]
 }
@@ -138,179 +281,188 @@ estudiantes escribieron sobre él, agrupadas por evaluación.
 
 ---
 
-## Estudiantes
+## 4. Estudiantes
 
 ### `POST /estudiantes`
-Registra un estudiante (ficha estilo SIA).
+Registra un estudiante. **Requeridos:** `numeroDocumento`, `nombres`, `apellidos`.
+**Opcionales:** `codigo`, `sexo`, `email`, `telefono`, `direccion`, `programaId`, `semestre`.
 
-**Body:** `numeroDocumento`, `nombres`, `apellidos` requeridos; opcionales
-`codigo`, `sexo`, `email`, `telefono`, `direccion`, `programaId`, `semestre`.
+```json
+{ "numeroDocumento": "10000051", "nombres": "ANDREA", "apellidos": "PEREZ MORA",
+  "codigo": "0222400051", "sexo": "FEMENINO", "email": "aperez51@unicartagena.edu.co",
+  "semestre": 3, "programaId": 1 }
+```
+**Respuesta 201:** modelo Estudiante completo. **Errores:** `409` documento duplicado.
 
-### `GET /estudiantes`
-Lista todos los estudiantes con ficha completa: `codigo`, `numeroDocumento`,
-`sexo`, contacto, `programaCodigo/programaNombre`, `semestre`,
-`estadoAcademico`, `estadoIngreso`, `planCodigo/planNombre`.
-
-### `GET /estudiantes/{id}`
-Detalle de un estudiante.
+### `GET /estudiantes` · `GET /estudiantes/{id}`
+Lista completa / detalle — modelo Estudiante arriba.
 
 ### `GET /estudiantes/{id}/evaluaciones`
-Vista del estudiante: las evaluaciones en las que está inscrito, pendientes primero.
-Es la fuente de datos para la pantalla "mis evaluaciones" del estudiante.
+**Vista del estudiante**: evaluaciones inscritas, pendientes primero.
+Fuente de datos para la pantalla "mis evaluaciones" (la del roleo por login).
 
-**Respuesta 200** — lista de:
+```json
+[
+  {
+    "evaluacionId": 6, "estado": "ABIERTA", "grupo": "B2", "periodo": "2025-2",
+    "docenteId": 3, "docenteNombre": "CARLOS ALBERTO MENDOZA SIERRA",
+    "asignaturaId": 5, "asignaturaCodigo": "EP1301", "asignaturaNombre": "Ingeniería de Software I",
+    "programaNombre": "INGENIERÍA DE SISTEMAS",
+    "contestada": false, "encuestaId": null
+  },
+  {
+    "evaluacionId": 5, "estado": "ABIERTA", "grupo": "A1", "periodo": "2025-1",
+    "docenteId": 4, "docenteNombre": "LUIS EDUARDO PATERNINA CUELLO",
+    "asignaturaId": 6, "asignaturaCodigo": "EP2103", "asignaturaNombre": "Redes de Computadores",
+    "programaNombre": "INGENIERÍA DE SISTEMAS",
+    "contestada": true, "encuestaId": 85
+  }
+]
+```
+`contestada: false` + `encuestaId: null` → pendiente (mostrar botón "responder").
+
+### `GET /estudiantes/{id}/encuestas`
+**Vista administrativa**: detalle de cada encuesta que respondió (modelo Encuesta
+con todas las respuestas y sentimientos).
+
+---
+
+## 5. Instrumento — Categorías y preguntas
+
+### `GET /categorias`
+```json
+[{ "id": 1, "codigo": "CONCEPTUAL", "nombre": "Conceptual", "orden": 1, "totalPreguntas": 5 }]
+```
+Sembradas: `CONCEPTUAL`(5) · `PEDAGOGICO`(3) · `RELACIONES`(7) · `COMENTARIOS`(2).
+
+### `POST /categorias`
+`{ "codigo": "TUTORIA", "nombre": "Tutoría y acompañamiento" }` — ambos requeridos; `codigo` único, se normaliza a mayúsculas. **Error `409`** duplicado.
+
+### `GET /preguntas`
+Instrumento completo ordenado por número. **Query:** `?soloActivas=false` (default `true`).
+
+### `POST /preguntas`
+```json
+{ "categoriaCodigo": "COMENTARIOS", "texto": "¿Cómo califica la tutoría?", "tipo": "TEXTO", "numero": 18 }
+```
+`numero` opcional (auto-asigna el siguiente libre). **Errores:** `404` categoría · `409` número duplicado · `400` tipo inválido.
+
+### `PUT /preguntas/{id}`
+Campos parciales: `{ "categoriaCodigo", "numero", "texto", "tipo" }`.
+**Errores:** `404` · `409` número duplicado o tipo con respuestas.
+
+### `PATCH /preguntas/{id}/estado`
+`{ "estado": "INACTIVA" }` → `ACTIVA` | `INACTIVA`. Una inactiva no se exige en nuevas encuestas.
+
+### `DELETE /preguntas/{id}`
+Solo sin respuestas; si tiene → `409` sugiriendo inactivarla. **204** al borrar.
+
+---
+
+## 6. Evaluaciones (grupos)
+
+### `POST /evaluaciones`
+```json
+{ "docenteId": 1, "asignaturaId": 5, "grupo": "B2", "periodo": "2025-2", "estudiantesEsperados": 10 }
+```
+Requeridos: `docenteId`, `asignaturaId`, `grupo`, `periodo`. Único por docente+materia+grupo+periodo.
+**Errores:** `404` docente/asignatura · `409` combinación ya existe. Nace `ABIERTA` y **sin inscritos**
+(la inscripción se hace aparte o por seed; los estudiantes solo responden si están inscritos).
+
+### `GET /evaluaciones`
+**Queries opcionales:** `?docenteId=` `?asignaturaId=` `?periodo=` → modelo Evaluación.
+
+### `GET /evaluaciones/{id}` · `PATCH /evaluaciones/{id}/estado`
+Detalle / abrir-cerrar: `{ "estado": "CERRADA" }`. Una `CERRADA` rechaza encuestas (`422 EVALUACION_NO_ABIERTA`).
+
+### `GET /evaluaciones/{id}/inscritos`
+Estudiantes inscritos al grupo (modelo Estudiante completo).
+
+### `GET /evaluaciones/{id}/encuestas`
+Encuestas respondidas del grupo (modelo Encuesta completo c/u).
+
+### `GET /evaluaciones/{id}/graficas`
+Agregados del grupo:
+
+```json
+{
+  "evaluacionId": 1, "docenteNombre": "...", "asignaturaCodigo": "EP1303",
+  "grupo": "A1", "periodo": "2025-1",
+  "participacion": { "esperados": 20, "respondidas": 20, "porcentaje": 100.0 },
+  "promedioGeneral": 3.74, "valoracion": "Bueno",
+  "radarCategorias": { "labels": [...], "valores": [...] },
+  "barrasPromedioPreguntas": { "labels": ["P1"..."P15"], "valores": [3.55, 3.75, ...] },
+  "distribucionLikert": { "labels": ["1","2","3","4","5"], "valores": [4, 29, 74, 126, 67] },
+  "distribucionPorPregunta": [{ "numero": 1, "texto": "...", "categoria": "CONCEPTUAL", "distribucion": [0,2,6,11,1] }],
+  "sentimientos": { "labels": ["POSITIVO","NEUTRO","NEGATIVO"], "valores": [37, 0, 3] },
+  "promedioSentimiento": 0.69,
+  "wordCloud": [{ "texto": "aunque", "peso": 10 }],
+  "comentariosDestacados": { "masPositivo": "...", "masNegativo": "..." }
+}
+```
+
+---
+
+## 7. Encuestas
+
+### `POST /encuestas`
+Registra la respuesta de un estudiante. Debe traer **todas las preguntas activas** (hoy 17) una sola vez.
+
 ```json
 {
   "evaluacionId": 6,
-  "estado": "ABIERTA",                    // ABIERTA | CERRADA
-  "grupo": "B2",
-  "periodo": "2025-2",
-  "docenteId": 3,
-  "docenteNombre": "CARLOS ALBERTO MENDOZA SIERRA",
-  "asignaturaId": 5,
-  "asignaturaCodigo": "EP1301",
-  "asignaturaNombre": "Ingeniería de Software I",
-  "programaNombre": "INGENIERÍA DE SISTEMAS",
-  "contestada": false,                    // false = pendiente por responder
-  "encuestaId": null                      // id de su encuesta si ya respondió
-}
-```
-
-### `GET /estudiantes/{id}/encuestas`
-Vista administrativa: **el detalle de cada encuesta que respondió el
-estudiante** (una por evaluación), con todas sus respuestas y sentimientos.
-
----
-
-## Instrumento — Categorías
-
-### `GET /categorias`
-Lista categorías con conteo de preguntas.
-**Respuesta:** `[{ id, codigo, nombre, orden, totalPreguntas }]`
-
-### `POST /categorias`
-Crea una categoría para agrupar preguntas.
-
-**Body:** `{ "codigo": "TUTORIA", "nombre": "Tutoría y acompañamiento" }` — ambos requeridos; `codigo` máx 30, único (se normaliza a mayúsculas).
-
----
-
-## Instrumento — Preguntas (CRUD)
-
-### `GET /preguntas`
-Lista las preguntas del instrumento ordenadas por número.
-
-**Query opcional:** `?soloActivas=false` — por defecto `true` (solo activas).
-
-**Respuesta:** `[{ id, numero, texto, tipo, categoriaCodigo, categoriaNombre, estado }]`
-
-### `POST /preguntas`
-Crea una pregunta nueva.
-
-**Body:**
-```json
-{
-  "categoriaCodigo": "COMENTARIOS", // requerido, debe existir
-  "texto": "¿Cómo califica...?",    // requerido, máx 300
-  "tipo": "TEXTO",                  // opcional: LIKERT (default) | TEXTO
-  "numero": 18                      // opcional: si no se envía, asigna el siguiente libre
-}
-```
-**Errores:** 404 categoría inexistente · 409 número duplicado · 400 tipo inválido.
-
-### `PUT /preguntas/{id}`
-Actualiza una pregunta (campos parciales).
-
-**Body (todos opcionales):**
-```json
-{ "categoriaCodigo": "RELACIONES", "numero": 5, "texto": "...", "tipo": "LIKERT" }
-```
-**Errores:** 404 no existe · 409 número duplicado o tipo cambiado teniendo respuestas · 400 texto vacío.
-
-### `PATCH /preguntas/{id}/estado`
-Activa/inactiva una pregunta.
-
-**Body:** `{ "estado": "INACTIVA" }` — valores `ACTIVA` | `INACTIVA`
-
-### `DELETE /preguntas/{id}`
-Elimina una pregunta. **Solo si no tiene respuestas registradas** — si las tiene devuelve `409` sugiriendo inactivarla. **Respuesta 204.**
-
----
-
-## Evaluaciones
-
-### `POST /evaluaciones`
-Crea una evaluación (docente + asignatura + grupo + periodo).
-
-**Body:**
-```json
-{
-  "docenteId": 1,                // requerido
-  "asignaturaId": 10,            // requerido, debe existir en el catálogo de pensum
-  "grupo": "A1",                 // requerido
-  "periodo": "2025-1",           // requerido
-  "estudiantesEsperados": 16     // opcional
-}
-```
-
-### `GET /evaluaciones`
-Lista evaluaciones. **Queries opcionales:** `?docenteId=` `?asignaturaId=` `?periodo=`
-
-**Respuesta:** `[{ id, docenteId, docenteNombre, asignaturaId, asignaturaCodigo, asignaturaNombre, grupo, periodo, estudiantesEsperados, encuestasRespondidas, estado, fechaCreacion }]`
-
-### `GET /evaluaciones/{id}`
-Detalle de una evaluación.
-
-### `PATCH /evaluaciones/{id}/estado`
-Abre/cierra la evaluación. **Body:** `{ "estado": "ABIERTA" }` — `ABIERTA` | `CERRADA` (una cerrada no acepta encuestas).
-
-### `GET /evaluaciones/{id}/encuestas`
-Lista las encuestas respondidas de esa evaluación, con todas sus respuestas (Likert con `valor`, texto con `textoRespuesta` + sentimiento) y el estudiante que respondió cada una (`estudianteId`, `estudianteNombre`, `estudianteDocumento`).
-
-### `GET /evaluaciones/{id}/inscritos`
-Lista los estudiantes inscritos en el grupo de la evaluación (ficha completa).
-
-### `GET /evaluaciones/{id}/graficas`
-Gráficas agregadas de la evaluación (todas las encuestas del grupo).
-
-**Respuesta:** participación (esperados/respondidas/%), promedio + valoración, radar por categoría, barras de promedio por pregunta, distribución Likert global y apilada por pregunta, pie de sentimientos + score, nube de palabras y comentarios más positivo/negativo.
-
----
-
-## Encuestas
-
-### `POST /encuestas`
-Registra la respuesta de un estudiante. Debe incluir **todas las preguntas activas** una sola vez.
-
-**Body:**
-```json
-{
-  "evaluacionId": 1,                    // requerido; la evaluación debe estar ABIERTA
-  "estudianteId": 36,                   // opcional; debe estar inscrito en la evaluación
-  "respuestas": [                        // requerido, no vacío, sin duplicados
-    { "preguntaId": 1,  "valor": 5 },    // pregunta LIKERT: valor 1-5 obligatorio
-    { "preguntaId": 16, "textoRespuesta": "El docente explica muy bien..." } // TEXTO: obligatorio, máx 2000
+  "estudianteId": 41,
+  "respuestas": [
+    { "preguntaId": 1,  "valor": 4 },
+    { "preguntaId": 2,  "valor": 5 },
+    { "preguntaId": 16, "textoRespuesta": "Debería usar más ejercicios prácticos en clase." },
+    { "preguntaId": 17, "textoRespuesta": "Explica muy claro y responde dudas con paciencia." }
   ]
 }
 ```
-**Errores:** 404 evaluación/estudiante inexistente · 409 estudiante ya respondió · 400 evaluación cerrada, estudiante no inscrito, pregunta inexistente/inactiva, duplicada, falta alguna activa, valor fuera de 1-5 o texto vacío en pregunta TEXTO.
 
-**Respuesta 201:** `{ id, evaluacionId, estudianteId, estudianteNombre, estudianteDocumento, fechaRespuesta, promedio, valoracion, respuestas: [...] }`
+| Regla | Error |
+|---|---|
+| Evaluación `ABIERTA` | `422 EVALUACION_NO_ABIERTA` |
+| Estudiante inscrito en la evaluación | `400` |
+| LIKERT: `valor` 1–5 requerido · TEXTO: `textoRespuesta` requerido (máx 2000) | `400` |
+| Todas las activas presentes, sin duplicadas | `400` |
+| Una encuesta por estudiante por evaluación | `409` |
+| Al responder TEXTO se calcula `sentimiento`/`sentimientoScore`/`sentimientoMetodo` automático | — |
+
+**Respuesta 201:** modelo Encuesta completo.
 
 ### `GET /encuestas/{id}`
-Detalle de una encuesta respondida (mismo shape anterior).
+Detalle completo (modelo Encuesta).
 
 ### `GET /encuestas/{id}/grafica`
-Gráfica de la encuesta individual.
+Gráfica de la encuesta individual:
 
-**Respuesta:** promedio + valoración, radar por categoría, barras con el valor de cada pregunta Likert, y `respuestasTexto[]` con cada comentario, su pregunta, sentimiento, score y método.
+```json
+{
+  "encuestaId": 1, "evaluacionId": 1, "fechaRespuesta": "2026-10-23T00:39:09.831523",
+  "promedioGeneral": 3.4, "valoracion": "Regular",
+  "radarCategorias": { "labels": ["CONCEPTUAL","PEDAGOGICO","RELACIONES"], "valores": [3.4, 4.0, 3.14] },
+  "barrasPreguntas": [{ "numero": 1, "texto": "...", "categoria": "CONCEPTUAL", "valor": 2 }],
+  "respuestasTexto": [{ "numero": 16, "pregunta": "...", "textoRespuesta": "...",
+                       "sentimiento": "POSITIVO", "sentimientoScore": 0.3924, "sentimientoMetodo": "MODELO" }]
+}
+```
 
 ---
 
-## Códigos de error comunes
+## 8. Errores
+
+Formato de error (GlobalExceptionHandler):
+```json
+{ "timestamp": "2026-10-23T01:00:00", "status": 401, "error": "Unauthorized",
+  "code": "NO_AUTORIZADO", "message": "Usuario o contraseña incorrectos" }
+```
 
 | HTTP | Cuándo |
 |---|---|
-| 400 | Validación de body o regla de negocio (duplicados, faltantes, rango) |
-| 404 | Recurso no encontrado (docente, evaluación, encuesta, pregunta, categoría) |
-| 409 | Conflicto (número de pregunta duplicado, tipo con respuestas, eliminar con respuestas, código de categoría repetido) |
+| `400` | Validación de body (campos requeridos, rangos, duplicados en respuestas, estudiante no inscrito) |
+| `401` | Login inválido, sin cookie de sesión o sesión expirada |
+| `404` | Recurso inexistente (docente, estudiante, evaluación, encuesta, pregunta, categoría, asignatura) |
+| `409` | Documento duplicado, número de pregunta duplicado, cambiar tipo con respuestas, borrar con respuestas, estudiante ya respondió esa evaluación |
+| `422` | Regla de negocio (`EVALUACION_NO_ABIERTA` al encuestar una cerrada, `NO_AUTORIZADO` en credenciales) |
