@@ -13,9 +13,10 @@ evaluaciones por grupo, encuestas con análisis de sentimiento y reportes/gráfi
 | Frontend | `http://localhost:3002` |
 
 **Datos demo cargados:** 4 docentes · 50 estudiantes · 6 asignaturas ·
-**14 evaluaciones** (5 en 2025-1 + 1 pendiente en 2025-2 + 8 en 2026-2) ·
-**290 encuestas respondidas** · **cada estudiante tiene 6 evaluaciones**
-inscritas (carga académica real de semestre, como en el SIG) · 55 usuarios con roles.
+**17 evaluaciones** (5 en 2025-1 CERRADAS con sus encuestas + 12 en 2026-2 ABIERTAS) ·
+**120 encuestas respondidas** (historial 2025-1) ·
+**cada estudiante tiene 6 encuestas PENDIENTES por hacer en 2026-2**
+(carga académica real de semestre, como en el SIG) · 55 usuarios con roles.
 
 ---
 
@@ -33,12 +34,12 @@ ya está configurado con `allowCredentials` para `:3000`, `:3002` y `:5173`.
 | `ESTUDIANTE` | `0222400001` … `0222400050` (código) | `10000001` … `10000050` (su documento) | Encuestas pendientes o su dashboard |
 | `DOCENTE` | `10301274` `72104567` `73098812` `10304566` | mismo número de documento | Dashboard |
 
-**Estudiantes con encuesta PENDIENTE** (inscritos en evaluación 6, grupo B2, periodo 2025-2):
+**Todos los estudiantes tienen encuestas PENDIENTES** (periodo activo 2026-2):
 
-`0222400041`–`0222400050` → claves `10000041`–`10000050`.
-Estos entran con `surveyCompleted: false` → van a la vista de encuesta:
-ven **6 tarjetas docente-asignatura** (5 contestadas + 1 pendiente).
-Los demás (`…001`–`…040`) ya respondieron sus 6 → `surveyCompleted: true` → dashboard.
+`0222400001`–`0222400050` → claves `10000001`–`10000050`.
+Cada uno entra con `surveyCompleted: false` → vista de encuesta con
+**6 tarjetas docente-asignatura pendientes** (más su historial 2025-1
+respondido, que aparece como contestado).
 
 ### `POST /api/auth/login`
 
@@ -307,18 +308,18 @@ Fuente de datos para la pantalla "mis evaluaciones" (la del roleo por login).
 ```json
 [
   {
-    "evaluacionId": 6, "estado": "ABIERTA", "grupo": "B2", "periodo": "2025-2",
-    "docenteId": 3, "docenteNombre": "CARLOS ALBERTO MENDOZA SIERRA",
-    "asignaturaId": 5, "asignaturaCodigo": "EP1301", "asignaturaNombre": "Ingeniería de Software I",
+    "evaluacionId": 21, "estado": "ABIERTA", "grupo": "B1", "periodo": "2026-2",
+    "docenteId": 2, "docenteNombre": "MARIA FERNANDA RUIZ CASTRO",
+    "asignaturaId": 4, "asignaturaCodigo": "EP2201", "asignaturaNombre": "Bases de Datos",
     "programaNombre": "INGENIERÍA DE SISTEMAS",
     "contestada": false, "encuestaId": null
   },
   {
-    "evaluacionId": 5, "estado": "ABIERTA", "grupo": "A1", "periodo": "2025-1",
-    "docenteId": 4, "docenteNombre": "LUIS EDUARDO PATERNINA CUELLO",
-    "asignaturaId": 6, "asignaturaCodigo": "EP2103", "asignaturaNombre": "Redes de Computadores",
+    "evaluacionId": 1, "estado": "CERRADA", "grupo": "A1", "periodo": "2025-1",
+    "docenteId": 1, "docenteNombre": "GABRIEL ELIAS CHANCHI GOLONDRINO",
+    "asignaturaId": 1, "asignaturaCodigo": "EP1303", "asignaturaNombre": "Interacción Humano Computador",
     "programaNombre": "INGENIERÍA DE SISTEMAS",
-    "contestada": true, "encuestaId": 85
+    "contestada": true, "encuestaId": 7
   }
 ]
 ```
@@ -433,8 +434,8 @@ Registra la respuesta de un estudiante. Debe traer **todas las preguntas activas
 
 ```json
 {
-  "evaluacionId": 6,
-  "estudianteId": 41,
+  "evaluacionId": 21,
+  "estudianteId": 7,
   "respuestas": [
     { "preguntaId": 18, "valor": 4 },
     { "preguntaId": 19, "valor": 3 },
