@@ -18,14 +18,6 @@
     overflow: hidden;
     max-height: 300px;
 }
-.logo{
-    position: absolute;
-    right: 2.2rem;
-    bottom: 0.8rem;
-    width: 250px;
-    height: auto;
-    opacity: 0.2;
-}
 
 .hero::after {
     position: absolute;
@@ -74,6 +66,14 @@
     color: rgba(255, 255, 255, 0.9);
     
     line-height: 1.5;
+}
+.logo{
+    position: absolute;
+    right: 2.2rem;
+    bottom: 0.8rem;
+    width: 250px;
+    height: auto;
+    opacity: 0.2;
 }
 
 

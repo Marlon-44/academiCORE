@@ -1,19 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
-import {
-    getTeachers,
-    type Teacher,
-    type SurveyStatus,
-} from "../../services/teacherSurveyService";
 import styles from "./index.module.css";
 import { Banner } from "./components/Banner";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
-import { TeacherCard } from "./components/TeacherCard";
+import { EvaluationCard } from "./components/EvaluationCard";
+import { fetchEvaluacionesEstudiante, type EvaluacionEstudianteDTO } from "../../services/evaluacionDocenteApi";
 
 type FilterStatus = "all" | SurveyStatus;
-
+type SurveyStatus = "pending" | "completed";
 type IconName =
     | "search"
     | "check"
@@ -61,33 +57,63 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 }
 
 export function PercepcionEstudiantil() {
+    console.log("🔥 Se está ejecutando PercepcionEstudiantil");
+
     const navigate = useNavigate();
-    const { completeSurvey } = useAuth();
+
+    const {
+        user,
+        completeSurvey,
+        isLoading: isAuthLoading,
+    } = useAuth();
+
+    const studentId = user?.estudianteId;
 
 
-    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [evaluaciones, setEvaluaciones] = useState<EvaluacionEstudianteDTO[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
     const [search, setSearch] = useState("");
     const [activeFilter, setActiveFilter] = useState<FilterStatus>("all");
+    const [reloadKey, setReloadKey] = useState(0);
 
-    const fetchTeachers = useCallback(() => {
-        return getTeachers();
-    }, []);
+    const fetchEvaluaciones = useCallback(() => {
+        if (studentId == null) {
+            throw new Error(
+                "No se encontró el identificador del estudiante autenticado."
+            );
+        }
+
+        return fetchEvaluacionesEstudiante(studentId);
+    }, [studentId]);
 
     useEffect(() => {
+        if (isAuthLoading) return;
+
         let cancelled = false;
 
-        fetchTeachers()
+        if (studentId == null) {
+            setLoadError(
+                "No se pudo identificar al estudiante. Inicia sesión nuevamente."
+            );
+            setIsLoading(false);
+            return;
+        }
+
+        setIsLoading(true);
+        setLoadError("");
+
+        fetchEvaluaciones()
             .then((data) => {
                 if (cancelled) return;
+                console.log("Evaluaciones recibidas del backend:", data);
+                setEvaluaciones(data);
 
-                setTeachers(data);
 
                 const everythingCompleted =
                     data.length > 0 &&
                     data.every(
-                        (teacher) => teacher.status === "completed"
+                        (evaluacion) => evaluacion.estado === "completed"
                     );
 
                 if (everythingCompleted) {
@@ -95,6 +121,7 @@ export function PercepcionEstudiantil() {
                 }
             })
             .catch((error: unknown) => {
+                console.error("Error cargando evaluaciones:", error);
                 if (cancelled) return;
 
                 console.error(
@@ -115,45 +142,72 @@ export function PercepcionEstudiantil() {
         return () => {
             cancelled = true;
         };
-    }, [fetchTeachers, completeSurvey]);
+    }, [
+        fetchEvaluaciones,
+        completeSurvey,
+        isAuthLoading,
+        studentId,
+        reloadKey,
+    ]);
 
 
-    const total = teachers.length;
-    const completed = teachers.filter((teacher) => teacher.status === "completed").length;
-    const pending = total - completed;
+    const total = evaluaciones.length;
+    const completed = evaluaciones.filter(
+        (evaluacion) => evaluacion.contestada
+    ).length;
+
+    const pending = evaluaciones.length - completed;
     const allCompleted = !isLoading && total > 0 && pending === 0;
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    const filteredTeachers = useMemo(() => {
-        const normalizedSearch = search.trim().toLocaleLowerCase("es");
+    
+const filteredEvaluations = useMemo(() => {
+    const normalizedSearch = search.trim().toLocaleLowerCase("es");
 
-        return teachers
-            .filter((teacher) => {
-                if (activeFilter !== "all" && teacher.status !== activeFilter) {
-                    return false;
-                }
+    return evaluaciones
+        .filter((evaluacion) => {
+            if (activeFilter === "pending" && evaluacion.contestada) {
+                return false;
+            }
 
-                const searchableText = [
-                    teacher.name,
-                    teacher.subject,
-                    teacher.program,
-                    teacher.semester,
-                ].join(" ").toLocaleLowerCase("es");
+            if (activeFilter === "completed" && !evaluacion.contestada) {
+                return false;
+            }
 
-                return searchableText.includes(normalizedSearch);
-            })
-            .sort((a, b) => {
-                if (a.status === b.status) {
-                    return a.name.localeCompare(b.name, "es");
-                }
-                return a.status === "pending" ? -1 : 1;
-            });
-    }, [teachers, search, activeFilter]);
+            const searchableText = [
+                evaluacion.docenteNombre,
+                evaluacion.asignaturaNombre,
+                evaluacion.programaNombre,
+                evaluacion.grupo,
+                evaluacion.periodo,
+            ]
+                .join(" ")
+                .toLocaleLowerCase("es");
 
-    const handleEvaluate = (teacher: Teacher) => {
-        if (teacher.status === "completed") return;
-        navigate(`/percepcion-estudiantil/evaluar/${teacher.id}`);
-    };
+            return searchableText.includes(normalizedSearch);
+        })
+        .sort((a, b) => {
+            if (a.contestada === b.contestada) {
+                return a.docenteNombre.localeCompare(
+                    b.docenteNombre,
+                    "es"
+                );
+            }
+
+            return a.contestada ? 1 : -1;
+        });
+}, [evaluaciones, search, activeFilter]);
+
+
+    const handleEvaluate = (evaluacion: EvaluacionEstudianteDTO) => {
+    if (evaluacion.contestada || evaluacion.estado !== "ABIERTA") {
+        return;
+    }
+
+    navigate(
+        `/percepcion-estudiantil/evaluar/${evaluacion.evaluacionId}`
+    );
+};
 
     const clearFilters = () => {
         setSearch("");
@@ -258,34 +312,7 @@ export function PercepcionEstudiantil() {
                             onClick={() => {
                                 setIsLoading(true);
                                 setLoadError("");
-
-                                void getTeachers()
-                                    .then((data) => {
-                                        setTeachers(data);
-
-                                        const everythingCompleted =
-                                            data.length > 0 &&
-                                            data.every(
-                                                (teacher) => teacher.status === "completed"
-                                            );
-
-                                        if (everythingCompleted) {
-                                            completeSurvey();
-                                        }
-                                    })
-                                    .catch((error: unknown) => {
-                                        console.error(
-                                            "Error al cargar las evaluaciones:",
-                                            error
-                                        );
-
-                                        setLoadError(
-                                            "No pudimos cargar las evaluaciones. Inténtalo nuevamente."
-                                        );
-                                    })
-                                    .finally(() => {
-                                        setIsLoading(false);
-                                    });
+                                setReloadKey((previous) => previous + 1);
                             }}
                         >
                             Reintentar
@@ -301,8 +328,8 @@ export function PercepcionEstudiantil() {
                         </div>
                         {!isLoading && !loadError && (
                             <span className={styles.resultsCount}>
-                                {filteredTeachers.length}{" "}
-                                {filteredTeachers.length === 1 ? "resultado" : "resultados"}
+                                {filteredEvaluations.length}{" "}
+                                {filteredEvaluations.length === 1 ? "resultado" : "resultados"}
                             </span>
                         )}
                     </div>
@@ -361,12 +388,12 @@ export function PercepcionEstudiantil() {
                             ))}
                             <span className={styles.srOnly}>Cargando las evaluaciones...</span>
                         </div>
-                    ) : loadError ? null : filteredTeachers.length > 0 ? (
+                    ) : loadError ? null : filteredEvaluations.length > 0 ? (
                         <div className={styles.teacherGrid}>
-                            {filteredTeachers.map((teacher) =>
-                                <TeacherCard
-                                    key={teacher.id}
-                                    teacher={teacher}
+                            {filteredEvaluations.map((evaluacion) =>
+                                <EvaluationCard
+                                    key={evaluacion.evaluacionId}
+                                    evaluacion={evaluacion}
                                     onEvaluate={handleEvaluate}
                                 />
                             )}
