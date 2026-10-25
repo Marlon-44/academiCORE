@@ -4,7 +4,25 @@
 Flyway) de la base `academicore` con los datos de prueba del módulo de
 evaluación docente.
 
-## Cómo funciona
+## Supabase (BD remota compartida)
+
+El mismo dump sirve para cargar la base en Supabase — así todos trabajan
+contra la MISMA base de datos sin montar el Postgres local:
+
+```bash
+# con el connection string del proyecto (Session pooler, puerto 5432):
+psql "postgres://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres" \
+     -f db/init/01_academicore.sql
+```
+
+El archivo trae `DROP ... IF EXISTS`, así que también sirve para
+**re-cargar** sobre una base ya usada (borra y recrea todo `public.*`).
+
+En `.env` basta poner `DB_URL`/`DB_USER`/`DB_PASSWORD` de Supabase y levantar
+sin el Postgres local: `docker compose up -d`. Para volver al Postgres local:
+`docker compose --profile localdb up -d`.
+
+## Cómo funciona (Postgres local, perfil `localdb`)
 
 - `docker-compose.yml` monta esta carpeta en `/docker-entrypoint-initdb.d`.
 - Al primer `docker compose up -d` (volumen `pgdata` vacío), Postgres ejecuta

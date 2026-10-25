@@ -3,9 +3,9 @@ spring:
     name: academicore
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/academicore
-    username: academicore
-    password: academicore_dev
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/academicore}
+    username: ${DB_USER:academicore}
+    password: ${DB_PASSWORD:academicore_dev}
     driver-class-name: org.postgresql.Driver
 
   jpa:

@@ -1,7 +1,13 @@
 services:
+  # Postgres local OPCIONAL — solo arranca con el perfil "localdb":
+  #   docker compose --profile localdb up -d
+  # Con Supabase (DB_URL en .env) no hace falta: el backend se conecta
+  # directo a la base de datos remota.
   postgres:
     image: postgres:16-alpine
     container_name: academicore-db
+    profiles:
+      - localdb
     environment:
       POSTGRES_DB: academicore
       POSTGRES_USER: academicore
@@ -30,13 +36,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+        required: false   # solo si el perfil localdb está activo
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/academicore
-      SPRING_DATASOURCE_USERNAME: academicore
-      SPRING_DATASOURCE_PASSWORD: academicore_dev
+      # Supabase: definir DB_URL/DB_USER/DB_PASSWORD en .env (ver .env.example)
+      # Local (--profile localdb): los defaults apuntan al postgres del compose
+      SPRING_DATASOURCE_URL: ${DB_URL:-jdbc:postgresql://postgres:5432/academicore}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-academicore}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-academicore_dev}
       SPRING_PROFILES_ACTIVE: docker
-      SUPABASE_URL: https://pxfitbmwillrxxbjlhjv.supabase.co
-      SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4Zml0Ym13aWxscnh4YmpsaGp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODgxNjA1MiwiZXhwIjoyMTA0MzkyMDUyfQ.PaY_Vdlnmw_RzYkFWu_PWzpSS7tNBzp2qb3lDyn8F3I
+      SUPABASE_URL: ${SUPABASE_URL:-https://pxfitbmwillrxxbjlhjv.supabase.co}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
       SENTIMENT_SERVICE_URL: http://sentiment:5000
     ports:
       - "8080:8080"
