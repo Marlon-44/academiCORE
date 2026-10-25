@@ -1,7 +1,8 @@
 # API — Evaluación Docente (academiCORE)
 
 Documento completo del proceso de evaluación docente: autenticación, usuarios,
-actores (docente, estudiante, asignatura), instrumento PVD003 administrable,
+actores (docente, estudiante, asignatura), instrumento **SIG "Encuesta de
+Percepción Estudiantil – Presencial"** administrable (21 ítems, escala 1–4),
 evaluaciones por grupo, encuestas con análisis de sentimiento y reportes/gráficas.
 
 | | URL |
@@ -12,8 +13,9 @@ evaluaciones por grupo, encuestas con análisis de sentimiento y reportes/gráfi
 | Frontend | `http://localhost:3002` |
 
 **Datos demo cargados:** 4 docentes · 50 estudiantes · 6 asignaturas ·
-6 evaluaciones (grupos de 20/25/30/10) · 120 encuestas respondidas ·
-55 usuarios con roles.
+**14 evaluaciones** (5 en 2025-1 + 1 pendiente en 2025-2 + 8 en 2026-2) ·
+**290 encuestas respondidas** · **cada estudiante tiene 6 evaluaciones**
+inscritas (carga académica real de semestre, como en el SIG) · 55 usuarios con roles.
 
 ---
 
@@ -34,8 +36,9 @@ ya está configurado con `allowCredentials` para `:3000`, `:3002` y `:5173`.
 **Estudiantes con encuesta PENDIENTE** (inscritos en evaluación 6, grupo B2, periodo 2025-2):
 
 `0222400041`–`0222400050` → claves `10000041`–`10000050`.
-Estos entran con `surveyCompleted: false` → van a la vista de encuesta.
-Los demás (`…001`–`…040`) ya respondieron todo → `surveyCompleted: true` → dashboard.
+Estos entran con `surveyCompleted: false` → van a la vista de encuesta:
+ven **6 tarjetas docente-asignatura** (5 contestadas + 1 pendiente).
+Los demás (`…001`–`…040`) ya respondieron sus 6 → `surveyCompleted: true` → dashboard.
 
 ### `POST /api/auth/login`
 
@@ -175,18 +178,18 @@ Asignaturas sembradas: `1 EP1303` IHC · `2 2222123` Electiva Software Libre ·
 
 ### Pregunta y categoría
 ```json
-{ "id": 1, "numero": 1, "texto": "¿El docente articula los contenidos del curso...?",
-  "tipo": "LIKERT", "categoriaCodigo": "CONCEPTUAL", "categoriaNombre": "Conceptual", "estado": "ACTIVA" }
+{ "id": 18, "numero": 1, "texto": "RESPETO: El docente usa un lenguaje cortés, respetuoso y es tolerante...",
+  "tipo": "LIKERT", "categoriaCodigo": "COMUNICACION", "categoriaNombre": "Comunicación", "estado": "ACTIVA" }
 ```
 ```json
-{ "id": 4, "codigo": "COMENTARIOS", "nombre": "Comentarios abiertos", "orden": 4, "totalPreguntas": 2 }
+{ "id": 7, "codigo": "GENERALIDADES", "nombre": "Generalidades", "orden": 7, "totalPreguntas": 2 }
 ```
 
 ### Valores enumerados
 
 | Campo | Valores |
 |---|---|
-| `tipo` (pregunta) | `LIKERT` (numérica 1–5) · `TEXTO` (abierta, con sentimiento) |
+| `tipo` (pregunta) | `LIKERT` (numérica; SIG usa 1–4, backend acepta 1–5) · `TEXTO` (abierta, con sentimiento) |
 | `estado` (pregunta) | `ACTIVA` · `INACTIVA` |
 | `estado` (evaluación) | `ABIERTA` (acepta encuestas) · `CERRADA` |
 | `sentimiento` | `POSITIVO` · `NEUTRO` · `NEGATIVO` |
@@ -333,13 +336,31 @@ con todas las respuestas y sentimientos).
 ```json
 [{ "id": 1, "codigo": "CONCEPTUAL", "nombre": "Conceptual", "orden": 1, "totalPreguntas": 5 }]
 ```
-Sembradas: `CONCEPTUAL`(5) · `PEDAGOGICO`(3) · `RELACIONES`(7) · `COMENTARIOS`(2).
+Sembradas — vigentes (SIG): `COMUNICACION`(4) · `EVALUACION_APRENDIZAJE`(3) ·
+`GENERALIDADES`(2 texto) · `MOTIVACION_COMPROMISO`(5) · `ORIENTACION_APRENDIZAJE`(7).
+Históricas (PVD003, solo conservan respuestas viejas): `CONCEPTUAL` · `PEDAGOGICO` · `RELACIONES` · `COMENTARIOS`.
 
 ### `POST /categorias`
 `{ "codigo": "TUTORIA", "nombre": "Tutoría y acompañamiento" }` — ambos requeridos; `codigo` único, se normaliza a mayúsculas. **Error `409`** duplicado.
 
 ### `GET /preguntas`
 Instrumento completo ordenado por número. **Query:** `?soloActivas=false` (default `true`).
+
+**Instrumento vigente — SIG "Encuesta de Percepción Estudiantil – Presencial"**
+(21 ítems activos; el PVD003 anterior quedó `INACTIVA` con números 101–117
+para conservar las encuestas 2025-1):
+
+| # | Categoría | Ítem |
+|---|---|---|
+| 1–4 | `COMUNICACION` | Respeto · Comunicación clara · Canales institucionales · Relaciones interpersonales (ambiente libre de acoso) |
+| 5–7 | `EVALUACION_APRENDIZAJE` | Responsabilidad (reglas/fechas) · Uso de resultados · Retroalimentación |
+| 8–9 | `GENERALIDADES` | **Texto abierto** — fortalezas del docente · aspectos por mejorar (máx 250 caracteres en el SIG) |
+| 10–14 | `MOTIVACION_COMPROMISO` | Puntualidad · Motivación · Preparación · Trabajo colaborativo · Fomento del aprendizaje |
+| 15–21 | `ORIENTACION_APRENDIZAJE` | Dominio del tema · Acompañamiento · Orientación a la investigación · Competencias TIC · Ejecución de planes · Estrategias didácticas · Planificación |
+
+**Escala real del SIG:** `1` NO CUMPLE · `2` ASPECTOS POR MEJORAR · `3` BUENO ·
+`4` EXCELENTE. El backend acepta `valor` **1–5** (superset, por compatibilidad
+con el instrumento anterior); las encuestas 2026-2 usan 1–4.
 
 ### `POST /preguntas`
 ```json
@@ -391,9 +412,9 @@ Agregados del grupo:
   "participacion": { "esperados": 20, "respondidas": 20, "porcentaje": 100.0 },
   "promedioGeneral": 3.74, "valoracion": "Bueno",
   "radarCategorias": { "labels": [...], "valores": [...] },
-  "barrasPromedioPreguntas": { "labels": ["P1"..."P15"], "valores": [3.55, 3.75, ...] },
+  "barrasPromedioPreguntas": { "labels": ["P1"..."P19"], "valores": [3.55, 3.75, ...] },
   "distribucionLikert": { "labels": ["1","2","3","4","5"], "valores": [4, 29, 74, 126, 67] },
-  "distribucionPorPregunta": [{ "numero": 1, "texto": "...", "categoria": "CONCEPTUAL", "distribucion": [0,2,6,11,1] }],
+  "distribucionPorPregunta": [{ "numero": 1, "texto": "...", "categoria": "COMUNICACION", "distribucion": [0,2,6,11,1] }],
   "sentimientos": { "labels": ["POSITIVO","NEUTRO","NEGATIVO"], "valores": [37, 0, 3] },
   "promedioSentimiento": 0.69,
   "wordCloud": [{ "texto": "aunque", "peso": 10 }],
@@ -406,26 +427,32 @@ Agregados del grupo:
 ## 7. Encuestas
 
 ### `POST /encuestas`
-Registra la respuesta de un estudiante. Debe traer **todas las preguntas activas** (hoy 17) una sola vez.
+Registra la respuesta de un estudiante. Debe traer **todas las preguntas activas**
+(hoy **21** del instrumento SIG) una sola vez: LIKERT con `valor` y TEXTO con
+`textoRespuesta`.
 
 ```json
 {
   "evaluacionId": 6,
   "estudianteId": 41,
   "respuestas": [
-    { "preguntaId": 1,  "valor": 4 },
-    { "preguntaId": 2,  "valor": 5 },
-    { "preguntaId": 16, "textoRespuesta": "Debería usar más ejercicios prácticos en clase." },
-    { "preguntaId": 17, "textoRespuesta": "Explica muy claro y responde dudas con paciencia." }
+    { "preguntaId": 18, "valor": 4 },
+    { "preguntaId": 19, "valor": 3 },
+    "...": "(las 19 LIKERT: ids 18-24 y 27-38)",
+    { "preguntaId": 25, "textoRespuesta": "Explica muy claro y responde dudas con paciencia." },
+    { "preguntaId": 26, "textoRespuesta": "Debería usar más ejercicios prácticos en clase." }
   ]
 }
 ```
+
+Ids del instrumento vigente: LIKERT `18–24` (ítems 1–7) y `27–38` (ítems 10–21);
+TEXTO `25` (ítem 8, fortalezas) y `26` (ítem 9, mejoras).
 
 | Regla | Error |
 |---|---|
 | Evaluación `ABIERTA` | `422 EVALUACION_NO_ABIERTA` |
 | Estudiante inscrito en la evaluación | `400` |
-| LIKERT: `valor` 1–5 requerido · TEXTO: `textoRespuesta` requerido (máx 2000) | `400` |
+| LIKERT: `valor` 1–5 requerido (el SIG usa 1–4) · TEXTO: `textoRespuesta` requerido (máx 2000; en el SIG el campo visible es de 250) | `400` |
 | Todas las activas presentes, sin duplicadas | `400` |
 | Una encuesta por estudiante por evaluación | `409` |
 | Al responder TEXTO se calcula `sentimiento`/`sentimientoScore`/`sentimientoMetodo` automático | — |

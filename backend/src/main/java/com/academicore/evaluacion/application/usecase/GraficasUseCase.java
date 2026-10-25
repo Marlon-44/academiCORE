@@ -147,6 +147,7 @@ public class GraficasUseCase {
         }
         preguntas.values().stream()
                 .filter(p -> p.getTipo() == TipoPregunta.LIKERT)
+                .filter(p -> conteosPorPregunta.containsKey(p.getId()))
                 .sorted(Comparator.comparing(PreguntaEvaluacion::getNumero))
                 .forEach(p -> {
                     long[] conteos = conteosPorPregunta.getOrDefault(p.getId(), new long[5]);
@@ -418,13 +419,16 @@ public class GraficasUseCase {
                 }
             }
         }
-        List<Double> valores = categorias.stream()
-                .map(c -> {
-                    double[] a = acum.get(c);
-                    return a[1] > 0 ? round2(a[0] / a[1]) : 0.0;
-                })
-                .toList();
-        return ChartSerie.builder().labels(categorias).valores(valores).build();
+        List<String> labels = new ArrayList<>();
+        List<Double> valores = new ArrayList<>();
+        for (String c : categorias) {
+            double[] a = acum.get(c);
+            if (a[1] > 0) {
+                labels.add(c);
+                valores.add(round2(a[0] / a[1]));
+            }
+        }
+        return ChartSerie.builder().labels(labels).valores(valores).build();
     }
 
     private ChartSerie distribucionLikert(List<Encuesta> encuestas) {

@@ -4,18 +4,20 @@ Genera encuestas de evaluación docente de prueba a través de la API real.
 Para cada evaluación (docente + materia + grupo + periodo):
   1. Consulta los estudiantes inscritos (GET /evaluaciones/{id}/inscritos).
   2. Hace que ~80% de los inscritos respondan la encuesta
-     (POST /encuestas con las 17 preguntas activas).
-  3. Cada respuesta de texto (P16/P17) corre por el analizador de
-     sentimiento real del backend.
+     (POST /encuestas con todas las preguntas activas del instrumento
+     vigente — hoy las 21 del SIG Percepción Estudiantil).
+  3. Cada respuesta de texto (ítems 8 y 9 de GENERALIDADES) corre por el
+     analizador de sentimiento real del backend.
 
 Cada docente tiene un "perfil" (excelente / bueno / regular / flojo) que
-determina la distribución Likert y los comentarios, para que los reportes
-salgan variados.
+determina la distribución Likert (escala SIG 1-4 en 2026-2) y los
+comentarios, para que los reportes salgan variados.
 
 Uso:
     python scripts/seed_encuestas.py                # todas las evaluaciones
     python scripts/seed_encuestas.py --prob 0.9     # ~90% de participación
     python scripts/seed_encuestas.py --base http://localhost:8080
+    python scripts/seed_encuestas.py --exclude-eval 6   # deja esa evaluación pendiente
 """
 
 import argparse
@@ -27,8 +29,17 @@ import json
 
 BASE = "http://localhost:8080/api/v1/evaluacion-docente"
 
-# Perfil por evaluación: (índice lista, sesgo Likert, estilo comentario)
-# sesgo: pesos para valores 1..5
+# Perfil por docente (apellido contenido en docenteNombre): sesgo Likert + tono.
+# pesos: probabilidades para la escala real del SIG: 1..4
+# (NO CUMPLE, ASPECTOS POR MEJORAR, BUENO, EXCELENTE)
+PERFILES_DOCENTE = {
+    "CHANCHI": {"pesos": [2, 8, 35, 55], "tono": "excelente"},
+    "RUIZ": {"pesos": [12, 28, 40, 20], "tono": "regular"},
+    "MENDOZA": {"pesos": [30, 32, 27, 11], "tono": "flojo"},
+    "PATERNINA": {"pesos": [6, 16, 42, 36], "tono": "bueno"},
+}
+
+# Respaldo por código de asignatura (evaluaciones 2025-1, escala 1..5)
 PERFILES = {
     # Chanchí — IHC: muy buen docente
     "EP1303": {
@@ -143,8 +154,12 @@ def http(method, path, payload=None):
         sys.exit(1)
 
 
-def perfil_para(evaluacion, preguntas):
-    """Perfil según la asignatura de la evaluación (por código)."""
+def perfil_para(evaluacion):
+    """Perfil por docente (apellido en el nombre); respaldo por código de asignatura."""
+    nombre = (evaluacion.get("docenteNombre") or "").upper()
+    for apellido, perfil in PERFILES_DOCENTE.items():
+        if apellido in nombre:
+            return perfil
     codigo = (evaluacion.get("asignaturaCodigo") or "").strip()
     return PERFILES.get(codigo, PERFILES["EP2201"])
 
@@ -154,14 +169,14 @@ def respuestas_para(preguntas, pesos, tono):
     for p in preguntas:
         item = {"preguntaId": p["id"]}
         if p["tipo"] == "LIKERT":
-            item["valor"] = random.choices([1, 2, 3, 4, 5], weights=pesos)[0]
+            item["valor"] = random.choices(range(1, len(pesos) + 1), weights=pesos)[0]
         else:
             numero = p.get("numero") or 0
             if random.random() < 0.08:  # unas pocas respuestas genéricas
                 item["textoRespuesta"] = random.choice(GENERICOS)
-            elif numero == 16:  # mejoras
+            elif numero in (9, 16):  # "¿en qué aspectos debería mejorar…?"
                 item["textoRespuesta"] = random.choice(MEJORAS[tono])
-            else:  # fortalezas / otra pregunta de texto
+            else:  # fortalezas (número 8) / otra pregunta de texto
                 item["textoRespuesta"] = random.choice(FORTALEZAS[tono])
         respuestas.append(item)
     return respuestas
@@ -175,7 +190,11 @@ def main():
     parser.add_argument("--prob", type=float, default=0.8,
                         help="Probabilidad de que un inscrito responda (default 0.8)")
     parser.add_argument("--seed", type=int, default=42, help="Semilla aleatoria")
+    parser.add_argument("--exclude-eval", default="",
+                        help="IDs de evaluaciones a omitir, separados por coma (quedan pendientes)")
     args = parser.parse_args()
+
+    excluidas = {int(x) for x in args.exclude_eval.split(",") if x.strip()}
 
     BASE = args.base.rstrip("/")
     random.seed(args.seed)
@@ -194,13 +213,16 @@ def main():
         if ev.get("estado") != "ABIERTA":
             print(f"  {label}: CERRADA, se omite")
             continue
+        if ev["id"] in excluidas:
+            print(f"  {label}: excluida, se omite")
+            continue
 
         inscritos = http("GET", f"/evaluaciones/{ev['id']}/inscritos")
         respondidas = {
             enc.get("estudianteId")
             for enc in http("GET", f"/evaluaciones/{ev['id']}/encuestas")
         }
-        perfil = perfil_para(ev, preguntas)
+        perfil = perfil_para(ev)
         ok = skip = err = 0
 
         for est in inscritos:
