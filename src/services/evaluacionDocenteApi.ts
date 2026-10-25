@@ -88,6 +88,15 @@ export interface EncuestaDTO {
     valoracion: string;
     respuestas: RespuestaItemDTO[];
 }
+export interface CrearEncuestaPayload {
+    evaluacionId: number;
+    estudianteId: number;
+    respuestas: {
+        preguntaId: number;
+        valor?: number;
+        textoRespuesta?: string;
+    }[];
+}
 
 export interface EstudianteDTO {
     id: number;
@@ -234,24 +243,69 @@ export interface DocenteGraficasDTO {
     }[];
     wordCloud: WordCloudItemDTO[];
 }
+export interface EvaluacionEstudianteDTO {
+    evaluacionId: number;
+    estado: string;
+    grupo: string;
+    periodo: string;
+    docenteId: number;
+    docenteNombre: string;
+    asignaturaId: number;
+    asignaturaCodigo: string;
+    asignaturaNombre: string;
+    programaNombre: string;
+    contestada: boolean;
+    encuestaId: number | null;
+}
+
 
 // ============================================================
 // Fetchers
 // ============================================================
 
 async function get<T>(path: string): Promise<T> {
-    const res = await fetch(`${API_BASE_URL}${path}`);
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        credentials: "include",
+    });
     if (!res.ok) throw new Error(`Error ${res.status} al consultar ${path}`);
     return res.json() as Promise<T>;
 }
+export function fetchEvaluacionesEstudiante(
+    estudianteId: number
+): Promise<EvaluacionEstudianteDTO[]> {
+    return get<EvaluacionEstudianteDTO[]>(
+        `/estudiantes/${estudianteId}/evaluaciones`
+    );
+}
+async function request<T>(
+    path: string,
+    init: RequestInit
+): Promise<T> {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        ...init,
+        credentials: "include",
+    });
 
-async function request<T>(path: string, init: RequestInit): Promise<T> {
-    const res = await fetch(`${API_BASE_URL}${path}`, init);
-    if (!res.ok) throw new Error(`Error ${res.status} en ${init.method ?? "request"} ${path}`);
-    if (res.status === 204) return undefined as T;
+    if (!res.ok) {
+        throw new Error(
+            `Error ${res.status} en ${init.method ?? "request"} ${path}`
+        );
+    }
+
+    if (res.status === 204) {
+        return undefined as T;
+    }
+
     return res.json() as Promise<T>;
 }
-
+export function crearEncuesta(
+    payload: CrearEncuestaPayload
+): Promise<EncuestaDTO> {
+    return request<EncuestaDTO>(
+        "/encuestas",
+        jsonInit("POST", payload)
+    );
+}
 const jsonInit = (method: string, body: unknown): RequestInit => ({
     method,
     headers: { "Content-Type": "application/json" },

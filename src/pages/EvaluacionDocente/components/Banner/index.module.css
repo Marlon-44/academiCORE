@@ -1,0 +1,111 @@
+
+.teacherSummary {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+    margin-top: 24px;
+    padding: 3rem 2rem;
+    border: 1px solid #e9e5f0;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(26, 20, 43, 0.035);
+    background-color: var(--uc-navy);
+    overflow: hidden;
+    position: relative;
+}
+.logo{
+    position: absolute;
+    width: 240px;
+    height: auto;
+    opacity: 0.4;
+    right: 0;
+    top: 0;
+}
+.teacherAvatar {
+    display: grid;
+    flex: 0 0 62px;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    border-radius: 17px;
+    background: #fff;
+    color: #4b317a;
+    font-size: 1.7rem;
+    font-weight: 800;
+}
+
+.teacherInfo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.summaryLabel {
+    color: #bde5dc;
+}
+
+.teacherInfo h2 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    color: #fff;
+}
+
+.teacherInfo > p {
+    margin: 0;
+    color: #fff;
+    width: 100%;
+}
+
+.metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-top: 7px;
+}
+
+.metadata span {
+    padding: 7px 11px;
+    border-radius: 8px;
+    background: #f2eff7;
+    color: #4b317a;
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+.eyebrow,
+.summaryLabel {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+.eyebrow {
+    color: #bde5dc;
+}
+
+
+@media (max-width: 600px) {
+    
+
+    .teacherSummary {
+        gap: 14px;
+    }
+
+    .teacherAvatar {
+        display: none;
+    }
+
+    .teacherInfo h2 {
+        font-size: 1.05rem;
+        overflow-wrap: anywhere;
+        
+    }
+    .logo{
+        display: none;
+    }
+    .teacherInfo h2{
+        font-size: 2rem;
+    }
+
+
+}
