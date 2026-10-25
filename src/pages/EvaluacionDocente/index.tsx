@@ -10,7 +10,6 @@ import {
     type PreguntaDTO,
 } from "../../services/evaluacionDocenteApi";
 import styles from "./index.module.css";
-import { formatName } from "../../services/textFormat";
 import { Banner } from "./components/Banner";
 import { FormIntro } from "./components/FormIntro";
 
