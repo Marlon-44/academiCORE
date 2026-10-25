@@ -1,6 +1,7 @@
 
 import styles from "./index.module.css";
-import type { Teacher } from "../../../../services/teacherSurveyService";
+import type { EvaluacionEstudianteDTO } from "../../../../services/evaluacionDocenteApi";
+import { formatName } from "../../../../services/textFormat";
 
 type IconName = "check" | "clock" | "book" | "arrow";
 
@@ -9,9 +10,9 @@ interface IconProps {
     size?: number;
 }
 
-interface TeacherCardProps {
-    teacher: Teacher;
-    onEvaluate: (teacher: Teacher) => void;
+interface EvaluationCardProps {
+    evaluacion: EvaluacionEstudianteDTO;
+    onEvaluate: (evaluacion: EvaluacionEstudianteDTO) => void;
 }
 
 function Icon({ name, size = 20 }: IconProps) {
@@ -63,13 +64,12 @@ function Icon({ name, size = 20 }: IconProps) {
     }
 }
 
-export const TeacherCard = ({
-    teacher,
+export const EvaluationCard = ({
+    evaluacion,
     onEvaluate,
-}: TeacherCardProps) => {
-    const isCompleted = teacher.status === "completed";
-
-    const initials = teacher.name
+}: EvaluationCardProps) => {
+    const isCompleted = evaluacion.contestada;
+    const initials = evaluacion.docenteNombre
         .split(" ")
         .filter((part) => part.length > 0)
         .slice(0, 2)
@@ -87,8 +87,8 @@ export const TeacherCard = ({
 
                 <span
                     className={`${styles.statusBadge} ${isCompleted
-                            ? styles.statusCompleted
-                            : styles.statusPending
+                        ? styles.statusCompleted
+                        : styles.statusPending
                         }`}
                 >
                     <Icon name={isCompleted ? "check" : "clock"} size={14} />
@@ -97,24 +97,26 @@ export const TeacherCard = ({
             </div>
 
             <div className={styles.teacherInfo}>
-                <h3>{teacher.name}</h3>
+                <h3>{formatName(evaluacion?.docenteNombre ?? "") }</h3>
 
                 <div className={styles.subject}>
-                    
-                    <span>{teacher.subject}</span>
+
+                    <span>{evaluacion.asignaturaNombre}</span>
                 </div>
 
-                <p className={styles.program}>{teacher.program}</p>
+                <p className={styles.program}>{formatName(evaluacion?.programaNombre ?? "") }</p>
             </div>
 
             <div className={styles.cardFooter}>
-                <span className={styles.groupLabel}> Semestre {teacher.semester}</span>
+                <span className={styles.groupLabel}>
+                    Grupo {evaluacion.grupo} · Periodo {evaluacion.periodo}
+                </span>
 
                 <button
                     type="button"
                     className={`${styles.cardAction} ${isCompleted ? styles.cardActionCompleted : ""
                         }`}
-                    onClick={() => onEvaluate(teacher)}
+                    onClick={() => onEvaluate(evaluacion)}
                     disabled={isCompleted}
                 >
                     {isCompleted ? "Evaluación enviada" : "Evaluar docente"}

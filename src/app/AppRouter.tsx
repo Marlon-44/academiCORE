@@ -7,6 +7,7 @@ import { AuthProvider } from "../auth/AuthContext";
 import { ProtectedRoute } from "../auth/ProtectedRoute";
 import { PercepcionEstudiantil } from "../pages/PercepcionEstudiantil";
 import { StudentDashboard } from "../pages/StudentDashboard";
+import { AdminDashboard } from "../pages/AdminDashboard";
 import { EvaluacionDocente } from "../pages/EvaluacionDocente";
 
 export const AppRouter = () => {
@@ -17,10 +18,7 @@ export const AppRouter = () => {
                     {/* Rutas públicas */}
                     <Route path="/" element={<MainLayout />}>
                         <Route index element={<Home />} />
-                        <Route
-                            path="evaluacion-docente"
-                            element={<EvaluacionDocente />}
-                        />
+
                     </Route>
 
                     {/* Rutas protegidas por autenticación y estado de encuesta */}
@@ -28,11 +26,19 @@ export const AppRouter = () => {
                         <Route
                             path="/percepcion-estudiantil"
                             element={<PercepcionEstudiantil />}
+                        /><Route
+                            path="/admin-dashboard"
+                            element={<AdminDashboard />}
                         />
                         <Route
                             path="/student-dashboard"
                             element={<StudentDashboard />}
                         />
+                        <Route
+                            path="/percepcion-estudiantil/evaluar/:evaluacionId"
+                            element={<EvaluacionDocente />}
+                        />
+
                     </Route>
                 </Routes>
             </AuthProvider>
