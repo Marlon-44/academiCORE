@@ -12,11 +12,11 @@ evaluaciones por grupo, encuestas con análisis de sentimiento y reportes/gráfi
 | Swagger UI (probar en vivo) | `http://localhost:8080/swagger-ui.html` |
 | Frontend | `http://localhost:3002` |
 
-**Datos demo cargados:** 4 docentes · 50 estudiantes · 6 asignaturas ·
-**17 evaluaciones** (5 en 2025-1 CERRADAS con sus encuestas + 12 en 2026-2 ABIERTAS) ·
-**120 encuestas respondidas** (historial 2025-1) ·
-**cada estudiante tiene 6 encuestas PENDIENTES por hacer en 2026-2**
-(carga académica real de semestre, como en el SIG) · 55 usuarios con roles.
+**Datos demo cargados:** 8 docentes · 80 estudiantes · 12 asignaturas ·
+**16 evaluaciones** (8 en 2026-1 CERRADAS + 8 en 2026-2 ABIERTAS) ·
+**960 encuestas respondidas** (640 en 2026-1 + 320 en 2026-2) ·
+**cada estudiante tiene 4 encuestas RESUELTAS + 4 PENDIENTES en 2026-2**
+(más su historial 2026-1 con las 8 respondidas) · 89 usuarios con roles.
 
 ---
 
@@ -31,15 +31,15 @@ ya está configurado con `allowCredentials` para `:3000`, `:3002` y `:5173`.
 | Rol | Usuario | Contraseña | Qué ve al entrar |
 |---|---|---|---|
 | `ADMIN` | `admin` | `admin123` | Dashboard `/evaluacion-docente` |
-| `ESTUDIANTE` | `0222400001` … `0222400050` (código) | `10000001` … `10000050` (su documento) | Encuestas pendientes o su dashboard |
-| `DOCENTE` | `10301274` `72104567` `73098812` `10304566` | mismo número de documento | Dashboard |
+| `ESTUDIANTE` | `0222400001` … `0222400080` (código) | `10000001` … `10000080` (su documento) | Encuestas pendientes o su dashboard |
+| `DOCENTE` | `10301274` `72104567` `73098812` `10304566` `74112233` `10403321` `11024567` `73115544` | mismo número de documento | Dashboard |
 
 **Todos los estudiantes tienen encuestas PENDIENTES** (periodo activo 2026-2):
 
-`0222400001`–`0222400050` → claves `10000001`–`10000050`.
+`0222400001`–`0222400080` → claves `10000001`–`10000080`.
 Cada uno entra con `surveyCompleted: false` → vista de encuesta con
-**6 tarjetas docente-asignatura pendientes** (más su historial 2025-1
-respondido, que aparece como contestado).
+**8 tarjetas docente-asignatura: 4 ya respondidas + 4 pendientes**,
+más su historial completo de 2026-1 (8 respondidas).
 
 ### `POST /api/auth/login`
 
@@ -151,9 +151,9 @@ Asignaturas sembradas: `1 EP1303` IHC · `2 2222123` Electiva Software Libre ·
   "asignaturaNombre": "Interacción Humano Computador",
   "programaId": 1,
   "grupo": "A1",
-  "periodo": "2025-1",
-  "estudiantesEsperados": 20,
-  "encuestasRespondidas": 20,
+  "periodo": "2026-2",
+  "estudiantesEsperados": 80,
+  "encuestasRespondidas": 40,
   "estado": "ABIERTA",
   "fechaCreacion": "2026-10-23T00:35:44.635934"
 }
@@ -171,8 +171,8 @@ Asignaturas sembradas: `1 EP1303` IHC · `2 2222123` Electiva Software Libre ·
   "promedio": 3.4,
   "valoracion": "Regular",
   "respuestas": [
-    { "preguntaId": 1,  "valor": 2, "textoRespuesta": null, "sentimiento": null, "sentimientoScore": null, "sentimientoMetodo": null },
-    { "preguntaId": 16, "valor": null, "textoRespuesta": "Más horas de consulta, porque las que tiene se llenan de inmediato.", "sentimiento": "POSITIVO", "sentimientoScore": 0.3924, "sentimientoMetodo": "MODELO" }
+    { "preguntaId": 18, "valor": 4, "textoRespuesta": null, "sentimiento": null, "sentimientoScore": null, "sentimientoMetodo": null },
+    { "preguntaId": 26, "valor": null, "textoRespuesta": "Más horas de consulta, porque las que tiene se llenan de inmediato.", "sentimiento": "NEUTRO", "sentimientoScore": 0.612, "sentimientoMetodo": "MODELO" }
   ]
 }
 ```
@@ -248,12 +248,13 @@ Gráficas globales del docente. **Query opcional:** `?asignaturaId=` limita a un
   "totalEncuestas": 45,
   "promedioGeneral": 3.66,
   "valoracion": "Bueno",
-  "radarCategorias": { "labels": ["CONCEPTUAL","PEDAGOGICO","RELACIONES"], "valores": [3.6, 3.7, 3.7] },
+  "radarCategorias": { "labels": ["COMUNICACION","EVALUACION_APRENDIZAJE","MOTIVACION_COMPROMISO","ORIENTACION_APRENDIZAJE"],
+                       "valores": [3.6, 3.7, 3.5, 3.6] },
   "comparativoMaterias": [
     { "evaluacionId": 1, "asignaturaCodigo": "EP1303", "asignaturaNombre": "Interacción Humano Computador",
-      "grupo": "A1", "periodo": "2025-1", "promedio": 3.74, "respondidas": 20 }
+      "grupo": "A1", "periodo": "2026-1", "promedio": 3.54, "respondidas": 80 }
   ],
-  "evolucionPeriodos": { "labels": ["2025-1"], "valores": [3.66] },
+  "evolucionPeriodos": { "labels": ["2026-1","2026-2"], "valores": [3.54, 3.52] },
   "sentimientos": { "labels": ["POSITIVO","NEUTRO","NEGATIVO"], "valores": [87, 0, 3] },
   "promedioSentimiento": 0.75,
   "fortalezas":    [{ "numero": 12, "texto": "¿El docente es puntual...?", "categoria": "RELACIONES", "promedio": 3.8 }],
@@ -273,9 +274,9 @@ agrupados por evaluación. **Query opcional:** `?asignaturaId=`.
   "promedioGeneral": 3.66, "valoracion": "Bueno",
   "evaluaciones": [{
     "evaluacionId": 1, "asignaturaCodigo": "EP1303", "asignaturaNombre": "Interacción Humano Computador",
-    "grupo": "A1", "periodo": "2025-1", "encuestas": 20, "promedio": 3.74,
+    "grupo": "A1", "periodo": "2026-1", "encuestas": 80, "promedio": 3.54,
     "comentarios": [{
-      "encuestaId": 1, "numero": 16, "pregunta": "¿Qué aspectos considera que debe mejorar...?",
+      "encuestaId": 1, "numero": 9, "pregunta": "¿En qué aspectos debería trabajar el docente...?",
       "texto": "Más horas de consulta...", "sentimiento": "POSITIVO",
       "sentimientoScore": 0.3924, "sentimientoMetodo": "MODELO"
     }]
@@ -315,7 +316,7 @@ Fuente de datos para la pantalla "mis evaluaciones" (la del roleo por login).
     "contestada": false, "encuestaId": null
   },
   {
-    "evaluacionId": 1, "estado": "CERRADA", "grupo": "A1", "periodo": "2025-1",
+    "evaluacionId": 1, "estado": "CERRADA", "grupo": "A1", "periodo": "2026-1",
     "docenteId": 1, "docenteNombre": "GABRIEL ELIAS CHANCHI GOLONDRINO",
     "asignaturaId": 1, "asignaturaCodigo": "EP1303", "asignaturaNombre": "Interacción Humano Computador",
     "programaNombre": "INGENIERÍA DE SISTEMAS",
@@ -348,8 +349,8 @@ Históricas (PVD003, solo conservan respuestas viejas): `CONCEPTUAL` · `PEDAGOG
 Instrumento completo ordenado por número. **Query:** `?soloActivas=false` (default `true`).
 
 **Instrumento vigente — SIG "Encuesta de Percepción Estudiantil – Presencial"**
-(21 ítems activos; el PVD003 anterior quedó `INACTIVA` con números 101–117
-para conservar las encuestas 2025-1):
+(21 ítems activos; el instrumento PVD003 anterior y sus encuestas 2025-1
+fueron eliminados del dataset — ahora solo existe el SIG):
 
 | # | Categoría | Ítem |
 |---|---|---|
@@ -360,12 +361,12 @@ para conservar las encuestas 2025-1):
 | 15–21 | `ORIENTACION_APRENDIZAJE` | Dominio del tema · Acompañamiento · Orientación a la investigación · Competencias TIC · Ejecución de planes · Estrategias didácticas · Planificación |
 
 **Escala real del SIG:** `1` NO CUMPLE · `2` ASPECTOS POR MEJORAR · `3` BUENO ·
-`4` EXCELENTE. El backend acepta `valor` **1–5** (superset, por compatibilidad
-con el instrumento anterior); las encuestas 2026-2 usan 1–4.
+`4` EXCELENTE. El backend acepta `valor` **1–5** (superset); todas las
+encuestas sembradas (2026-1 y 2026-2) usan 1–4.
 
 ### `POST /preguntas`
 ```json
-{ "categoriaCodigo": "COMENTARIOS", "texto": "¿Cómo califica la tutoría?", "tipo": "TEXTO", "numero": 18 }
+{ "categoriaCodigo": "GENERALIDADES", "texto": "¿Cómo califica la tutoría?", "tipo": "TEXTO", "numero": 22 }
 ```
 `numero` opcional (auto-asigna el siguiente libre). **Errores:** `404` categoría · `409` número duplicado · `400` tipo inválido.
 
@@ -385,7 +386,7 @@ Solo sin respuestas; si tiene → `409` sugiriendo inactivarla. **204** al borra
 
 ### `POST /evaluaciones`
 ```json
-{ "docenteId": 1, "asignaturaId": 5, "grupo": "B2", "periodo": "2025-2", "estudiantesEsperados": 10 }
+{ "docenteId": 1, "asignaturaId": 5, "grupo": "B2", "periodo": "2027-1", "estudiantesEsperados": 10 }
 ```
 Requeridos: `docenteId`, `asignaturaId`, `grupo`, `periodo`. Único por docente+materia+grupo+periodo.
 **Errores:** `404` docente/asignatura · `409` combinación ya existe. Nace `ABIERTA` y **sin inscritos**
@@ -409,9 +410,9 @@ Agregados del grupo:
 ```json
 {
   "evaluacionId": 1, "docenteNombre": "...", "asignaturaCodigo": "EP1303",
-  "grupo": "A1", "periodo": "2025-1",
-  "participacion": { "esperados": 20, "respondidas": 20, "porcentaje": 100.0 },
-  "promedioGeneral": 3.74, "valoracion": "Bueno",
+  "grupo": "A1", "periodo": "2026-1",
+  "participacion": { "esperados": 80, "respondidas": 80, "porcentaje": 100.0 },
+  "promedioGeneral": 3.54, "valoracion": "Bueno",
   "radarCategorias": { "labels": [...], "valores": [...] },
   "barrasPromedioPreguntas": { "labels": ["P1"..."P19"], "valores": [3.55, 3.75, ...] },
   "distribucionLikert": { "labels": ["1","2","3","4","5"], "valores": [4, 29, 74, 126, 67] },
