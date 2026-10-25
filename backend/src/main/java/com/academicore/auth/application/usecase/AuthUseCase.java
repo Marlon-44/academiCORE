@@ -15,7 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthUseCase {
 
-    public static final long DURACION_SESION_SEGUNDOS = 8 * 3600;
+    public static final long DURACION_SESION_STAFF_SEGUNDOS = 15L * 24 * 3600;
+    public static final long DURACION_SESION_ESTUDIANTE_SEGUNDOS = 60L * 24 * 3600;
 
     private final UsuarioRepository usuarioRepository;
     private final SesionRepository sesionRepository;
@@ -29,7 +30,7 @@ public class AuthUseCase {
                         "Usuario o contraseña incorrectos"));
 
         Sesion sesion = sesionRepository.save(
-                Sesion.nueva(usuario.getId(), DURACION_SESION_SEGUNDOS));
+                Sesion.nueva(usuario.getId(), duracionSesion(usuario.getRol())));
         usuarioRepository.marcarUltimoAcceso(usuario.getId());
         sesionRepository.deleteExpiradas();
 
@@ -54,6 +55,13 @@ public class AuthUseCase {
         if (token != null && !token.isBlank()) {
             sesionRepository.deleteByToken(token);
         }
+    }
+
+    /** Duración de sesión por rol: staff (admin/docente) 15 días, estudiante 60 días. */
+    public static long duracionSesion(com.academicore.auth.domain.model.RolUsuario rol) {
+        return rol == com.academicore.auth.domain.model.RolUsuario.ESTUDIANTE
+                ? DURACION_SESION_ESTUDIANTE_SEGUNDOS
+                : DURACION_SESION_STAFF_SEGUNDOS;
     }
 
     private UsuarioAutenticadoResponse toResponse(Usuario usuario) {

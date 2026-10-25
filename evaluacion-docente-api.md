@@ -22,7 +22,9 @@ evaluaciones por grupo, encuestas con análisis de sentimiento y reportes/gráfi
 
 ## 1. Autenticación y usuarios
 
-La sesión viaja en la cookie HttpOnly `academicore_session` (válida 8 h).
+La sesión viaja en la cookie HttpOnly `academicore_session`
+(token SecureRandom de 32 bytes, SameSite=Lax).
+**Duración por rol:** ADMIN/DOCENTE = **15 días** · ESTUDIANTE = **60 días**.
 El frontend debe enviar `credentials: "include"` en cada `fetch` y el CORS
 ya está configurado con `allowCredentials` para `:3000`, `:3002` y `:5173`.
 
@@ -303,7 +305,9 @@ Registra un estudiante. **Requeridos:** `numeroDocumento`, `nombres`, `apellidos
 Lista completa / detalle — modelo Estudiante arriba.
 
 ### `GET /estudiantes/{id}/evaluaciones`
-**Vista del estudiante**: evaluaciones inscritas, pendientes primero.
+**Vista del estudiante**: evaluaciones inscritas del periodo activo,
+pendientes primero. **Solo devuelve evaluaciones `ABIERTA`** — las de
+periodos cerrados (historial) son visibles solo para el administrador.
 Fuente de datos para la pantalla "mis evaluaciones" (la del roleo por login).
 
 ```json

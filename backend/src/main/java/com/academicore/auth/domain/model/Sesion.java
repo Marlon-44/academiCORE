@@ -6,8 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.security.SecureRandom;
 import java.time.OffsetDateTime;
-import java.util.UUID;
+import java.util.HexFormat;
 
 @Getter
 @Setter
@@ -22,11 +23,14 @@ public class Sesion {
     private OffsetDateTime creadoEn;
     private OffsetDateTime expiraEn;
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     public static Sesion nueva(Long usuarioId, long duracionSegundos) {
+        byte[] bytes = new byte[32];
+        RANDOM.nextBytes(bytes);
         OffsetDateTime ahora = OffsetDateTime.now();
         return Sesion.builder()
-                .token(UUID.randomUUID().toString().replace("-", "")
-                        + UUID.randomUUID().toString().replace("-", ""))
+                .token(HexFormat.of().formatHex(bytes))
                 .usuarioId(usuarioId)
                 .creadoEn(ahora)
                 .expiraEn(ahora.plusSeconds(duracionSegundos))

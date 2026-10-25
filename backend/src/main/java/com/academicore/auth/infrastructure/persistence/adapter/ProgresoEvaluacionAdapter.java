@@ -16,9 +16,13 @@ public class ProgresoEvaluacionAdapter implements ProgresoEvaluacionPort {
         Object[] row = (Object[]) entityManager.createNativeQuery("""
                 SELECT
                     (SELECT COUNT(*) FROM inscripcion_evaluacion i
-                        WHERE i.estudiante_id = :estudianteId) AS inscritas,
+                        JOIN evaluacion_docente ev ON ev.id = i.evaluacion_id
+                        WHERE i.estudiante_id = :estudianteId
+                          AND ev.estado = 'ABIERTA') AS inscritas,
                     (SELECT COUNT(*) FROM encuesta_evaluacion e
-                        WHERE e.estudiante_id = :estudianteId) AS respondidas
+                        JOIN evaluacion_docente ev ON ev.id = e.evaluacion_id
+                        WHERE e.estudiante_id = :estudianteId
+                          AND ev.estado = 'ABIERTA') AS respondidas
                 """)
                 .setParameter("estudianteId", estudianteId)
                 .getSingleResult();

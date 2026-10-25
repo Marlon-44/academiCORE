@@ -33,7 +33,8 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión",
-            description = "Valida las credenciales y crea una sesión de 8 horas enviada como cookie HttpOnly 'academicore_session'. "
+            description = "Valida las credenciales y crea una sesión enviada como cookie HttpOnly 'academicore_session'. "
+                    + "Duración por rol: administrativos (ADMIN/DOCENTE) 15 días, estudiantes 60 días. "
                     + "Usuarios demo: admin/admin123 - estudiante 0222400001/10000001 (codigo/documento) - docente 10301274/10301274")
     public ResponseEntity<UsuarioAutenticadoResponse> login(
             @Valid @RequestBody LoginRequest request) {
@@ -45,7 +46,8 @@ public class AuthController {
                 .from(COOKIE_SESION, result.sesion().getToken())
                 .httpOnly(true)
                 .path("/")
-                .maxAge(AuthUseCase.DURACION_SESION_SEGUNDOS)
+                .maxAge(java.time.Duration.between(
+                        result.sesion().getCreadoEn(), result.sesion().getExpiraEn()))
                 .sameSite("Lax")
                 .build();
 

@@ -37,6 +37,7 @@ public class EvaluacionesEstudianteAdapter implements EvaluacionesEstudiantePort
                        ON en.evaluacion_id = ev.id
                       AND en.estudiante_id = i.estudiante_id
                 WHERE i.estudiante_id = :estudianteId
+                  AND ev.estado = 'ABIERTA'
                 ORDER BY en.id NULLS FIRST, ev.periodo DESC, a.nombre
                 """)
                 .setParameter("estudianteId", estudianteId)
