@@ -162,7 +162,7 @@ export function AdminAside({ onExpandedChange }: AdminAsideProps) {
                                     title={!isExpanded ? item.label : undefined}
                                     aria-isExpanded={isOpen}
                                 >
-                                    <Icon size={20} />
+                                    {/*<Icon size={20} />*/}
 
                                     {isExpanded && (
                                         <>
