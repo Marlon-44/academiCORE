@@ -28,6 +28,14 @@ export function EvaluacionDocente() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+    const [modalConfirmacion, setModalConfirmacion] = useState<"salir" | "enviar" | null>(null);
+    const solicitarSalida = () => {
+        setModalConfirmacion("salir");
+    };
+
+    const confirmarSalida = () => {
+        navigate("/percepcion-estudiantil");
+    };
 
     useEffect(() => {
         if (isAuthLoading) return;
@@ -116,40 +124,12 @@ export function EvaluacionDocente() {
             [preguntaId]: valor,
         }));
     };
-
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
+    const confirmarEnvio = async () => {
         const estudianteId = user?.estudianteId;
 
         if (!evaluacion || estudianteId == null || isSubmitting) return;
 
-        const faltantes = preguntas.filter((pregunta) => {
-            const respuesta = respuestas[pregunta.id];
-
-            if (pregunta.tipo === "LIKERT") {
-                return typeof respuesta !== "number" ||
-                    respuesta < 1 ||
-                    respuesta > 5;
-            }
-
-            return typeof respuesta !== "string" ||
-                respuesta.trim().length === 0 ||
-                respuesta.trim().length > 2000;
-        });
-
-        if (faltantes.length > 0) {
-            setError(
-                `Completa las ${faltantes.length} pregunta(s) pendiente(s). ` +
-                "Los comentarios deben tener máximo 2000 caracteres."
-            );
-
-            document.getElementById(`pregunta-${faltantes[0].id}`)
-                ?.scrollIntoView({ behavior: "smooth", block: "center" });
-
-            return;
-        }
-
+        setModalConfirmacion(null);
         setError("");
         setIsSubmitting(true);
 
@@ -175,6 +155,7 @@ export function EvaluacionDocente() {
             setSuccess(true);
         } catch (err) {
             console.error("Error enviando la encuesta:", err);
+
             setError(
                 "No se pudo registrar la encuesta. Verifica tu conexión " +
                 "y vuelve a intentarlo. Si ya fue enviada, actualiza el listado."
@@ -182,6 +163,42 @@ export function EvaluacionDocente() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!evaluacion || user?.estudianteId == null || isSubmitting) return;
+
+        const faltantes = preguntas.filter((pregunta) => {
+            const respuesta = respuestas[pregunta.id];
+
+            if (pregunta.tipo === "LIKERT") {
+                return typeof respuesta !== "number" ||
+                    respuesta < 1 ||
+                    respuesta > 4;
+            }
+
+            return typeof respuesta !== "string" ||
+                respuesta.trim().length === 0 ||
+                respuesta.trim().length > 2000;
+        });
+
+        if (faltantes.length > 0) {
+            setError(
+                `Completa las ${faltantes.length} pregunta(s) pendiente(s). ` +
+                "Los comentarios deben tener máximo 2000 caracteres."
+            );
+
+            document.getElementById(`pregunta-${faltantes[0].id}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            return;
+        }
+
+        setError("");
+
+        // Si todas las respuestas son válidas, solicitar confirmación.
+        setModalConfirmacion("enviar");
     };
 
     if (isAuthLoading || isLoading) {
@@ -208,11 +225,9 @@ export function EvaluacionDocente() {
                     </p>
                     <button
                         type="button"
-                        onClick={() =>
-                            navigate("/student-dashboard", {
-                                replace: true,
-                            })
-                        }
+                        onClick={() => navigate("/percepcion-estudiantil", {
+                            replace: true,
+                        })}
                     >
                         Volver a mis evaluaciones
                     </button>
@@ -229,9 +244,7 @@ export function EvaluacionDocente() {
                         <p>{error}</p>
                         <button
                             type="button"
-                            onClick={() =>
-                                navigate("/percepcion-estudiantil")
-                            }
+                            onClick={solicitarSalida}
                         >
                             Volver a mis evaluaciones
                         </button>
@@ -251,7 +264,7 @@ export function EvaluacionDocente() {
                 <button
                     type="button"
                     className={styles.backButton}
-                    onClick={() => navigate("/percepcion-estudiantil")}
+                    onClick={solicitarSalida}
                 >
                     🡐   Volver a mis evaluaciones
                 </button>
@@ -406,6 +419,71 @@ export function EvaluacionDocente() {
                     </form>
                 )}
             </div>
+            {modalConfirmacion && (
+                <div
+                    className={styles.modalOverlay}
+                    onClick={() => setModalConfirmacion(null)}
+                >
+                    <section
+                        className={styles.modal}
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby="modal-title"
+                        aria-describedby="modal-description"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div
+                            className={`${styles.modalIcon} ${modalConfirmacion === "salir"
+                                ? styles.modalIconWarning
+                                : styles.modalIconSend
+                                }`}
+                            aria-hidden="true"
+                        >
+                            {modalConfirmacion === "salir" ? "!" : "✓"}
+                        </div>
+
+                        <h2 id="modal-title">
+                            {modalConfirmacion === "salir"
+                                ? "¿Salir de la encuesta?"
+                                : "¿Confirmar envío?"}
+                        </h2>
+
+                        <p id="modal-description">
+                            {modalConfirmacion === "salir"
+                                ? "Tienes una encuesta en proceso. Si sales ahora, podrías perder las respuestas que has registrado. ¿Deseas continuar?"
+                                : "Verifica que tus respuestas sean correctas. Una vez enviada, la encuesta quedará registrada y no podrás modificar tus respuestas."}
+                        </p>
+
+                        <div className={styles.modalActions}>
+                            <button
+                                type="button"
+                                className={styles.modalCancel}
+                                onClick={() => setModalConfirmacion(null)}
+                                disabled={isSubmitting}
+                            >
+                                {modalConfirmacion === "salir"
+                                    ? "Continuar respondiendo"
+                                    : "Revisar respuestas"}
+                            </button>
+
+                            <button
+                                type="button"
+                                className={styles.modalConfirm}
+                                onClick={
+                                    modalConfirmacion === "salir"
+                                        ? confirmarSalida
+                                        : confirmarEnvio
+                                }
+                                disabled={isSubmitting}
+                            >
+                                {modalConfirmacion === "salir"
+                                    ? "Salir de la encuesta"
+                                    : "Sí, enviar evaluación"}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
         </main>
     );
 }

@@ -123,14 +123,18 @@ export function GaugeChart({
     const r = size / 2 - 14;
     const cx = size / 2;
     const cy = size / 2 + 8;
-    const angle = Math.PI * (1 - pct);
-    const arc = (a: number) =>
-        `${cx + r * Math.cos(Math.PI - a)} ${cy - r * Math.sin(Math.PI - a)}`;
-    const large = pct > 0.5 ? 1 : 0;
+
+    // Ángulo en radianes: de PI (0%) a 0 (100%)
+    const currentAngle = Math.PI * (1 - pct);
+
+    // Coordenadas exactas del punto final sobre la misma circunferencia
+    const endX = cx + r * Math.cos(currentAngle);
+    const endY = cy - r * Math.sin(currentAngle);
 
     return (
         <div className={styles.gauge} style={{ width: size }}>
             <svg width={size} height={size / 2 + 26} viewBox={`0 0 ${size} ${size / 2 + 26}`}>
+                {/* Fondo Gris */}
                 <path
                     d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
                     fill="none"
@@ -138,14 +142,15 @@ export function GaugeChart({
                     strokeWidth={13}
                     strokeLinecap="round"
                 />
+                {/* Arco de Valor (Color) */}
                 {pct > 0 && (
                     <path
-                        d={`M ${cx - r} ${cy} A ${r} ${r} 0 ${large} 1 ${arc(angle)}`}
+                        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${endX} ${endY}`}
                         fill="none"
                         stroke={color}
                         strokeWidth={13}
                         strokeLinecap="round"
-                        style={{ transition: "stroke-dashoffset .5s ease" }}
+                        style={{ transition: "d 0.5s ease" }}
                     />
                 )}
                 <text

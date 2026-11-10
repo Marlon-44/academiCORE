@@ -89,6 +89,141 @@
     outline-offset: 3px;
 }
 
+/* Fondo del modal */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.2s ease;
+}
+
+/* Contenedor */
+.modal {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px 28px;
+    background: #fff;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+    animation: modalAppear 0.25s ease;
+}
+
+/* Icono */
+.modalIcon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #4b317a;
+    background: rgba(75, 49, 122, 0.1);
+}
+
+.modal h2 {
+    margin: 0 0 12px;
+    color: #333;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.modal p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    width: 100%;
+}
+
+/* Acciones */
+.modalActions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.modalCancel,
+.modalConfirm {
+    min-height: 42px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.modalCancel {
+    color: #555;
+    background: #eee;
+}
+
+.modalCancel:hover {
+    background: #ddd;
+}
+
+.modalConfirm {
+    color: #fff;
+    background: #4b317a;
+}
+
+.modalConfirm:hover {
+    background: #38235e;
+}
+
+.modalCancel:disabled,
+.modalConfirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .modal {
+        padding: 28px 20px;
+    }
+
+    .modalActions {
+        flex-direction: column-reverse;
+    }
+
+    .modalCancel,
+    .modalConfirm {
+        width: 100%;
+    }
+}
+
 @media (max-width: 700px) {
     .container {
         padding: 0.5rem 0;

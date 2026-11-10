@@ -94,24 +94,35 @@ export const LoginDropdown = ({
             });
 
             onClose();
-            if (authenticatedUser.role !== "ESTUDIANTE") {
-                navigate("/evaluacion-docente", {
-                    replace: true,
-                });
-                return;
+
+            switch (authenticatedUser.role) {
+                case "ADMIN":
+                    navigate("/admin-dashboard", {
+                        replace: true,
+                    });
+                    return;
+
+                case "ESTUDIANTE":
+                    if (!authenticatedUser.surveyCompleted) {
+                        navigate("/percepcion-estudiantil", {
+                            replace: true,
+                        });
+                        return;
+                    }
+
+                    navigate("/student-dashboard", {
+                        replace: true,
+                    });
+                    return;
+
+                default:
+                    // Un rol nuevo no debe recibir acceso
+                    // automáticamente a un dashboard existente.
+                    navigate("/", {
+                        replace: true,
+                    });
+                    return;
             }
-
-            if (!authenticatedUser.surveyCompleted) {
-                navigate("/percepcion-estudiantil", {
-                    replace: true,
-                });
-                return;
-            }
-
-            navigate("/student-dashboard", {
-                replace: true,
-            });
-
         } catch {
             /*
              * No mostramos si el usuario existe o no.
