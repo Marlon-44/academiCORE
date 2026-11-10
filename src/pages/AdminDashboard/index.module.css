@@ -912,6 +912,34 @@
     animation: shimmer 1.4s infinite;
 }
 
+.layout {
+    display: grid;
+    min-height: 100dvh;
+    transition: grid-template-columns 0.2s ease;
+    background-color: var(--backgroundGray);
+}
+
+.expanded {
+    grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.collapsed {
+    grid-template-columns: 76px minmax(0, 1fr);
+}
+
+.main {
+    min-width: 0;
+    grid-column: 2; 
+    background-color: var(--backgroundGray);
+    margin-left: 1.255dvw;
+}
+
+.content {
+    width: 100%;
+    min-width: 0;
+    padding: 24px;
+}
+
 @keyframes shimmer {
     to {
         background-position: -200% 0;

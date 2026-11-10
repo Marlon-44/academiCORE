@@ -20,6 +20,10 @@ export const Banner = () => {
                 <p className={styles.heroDescription}>
                     Tu opinión contribuye a mejorar la calidad académica. Consulta tus evaluaciones y completa las que tienes pendientes.
                 </p>
+                <div className={styles.metadata}>
+                    <p>Fecha de vencimiento: </p>
+                    <span>25/04/2025</span>
+                </div>
 
 
             </div>
