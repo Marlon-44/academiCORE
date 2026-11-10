@@ -146,7 +146,7 @@ export function AdminAside({ onExpandedChange }: AdminAsideProps) {
                     </span>
 
                     {adminNavigation.map((item) => {
-                        const Icon = item.icon;
+                        {/*const Icon = item.icon;*/}
                         const isOpen = openMenu === item.id;
 
                         return (
