@@ -1497,11 +1497,11 @@ COPY public.flyway_schema_history (installed_rank, version, description, type, s
 --
 
 COPY public.imagen_campus (id, campus_id, categoria_id, url, descripcion, orden, fecha_carga, estado) FROM stdin;
-1	1	7	https://zxgrpzbunghncopuhiea.supabase.co/storage/v1/object/public/campus/1/portada.jpeg	Portada - Claustro de San Agustín	1	2026-09-07 23:46:52.00814	ACTIVA
-2	2	7	https://zxgrpzbunghncopuhiea.supabase.co/storage/v1/object/public/campus/2/portada.jpg	Portada - Piedra de Bolívar	1	2026-09-07 23:46:52.00814	ACTIVA
-3	3	7	https://zxgrpzbunghncopuhiea.supabase.co/storage/v1/object/public/campus/3/portada.jpeg	Portada - Campus de San Pablo	1	2026-09-07 23:46:52.00814	ACTIVA
-4	4	7	https://zxgrpzbunghncopuhiea.supabase.co/storage/v1/object/public/campus/4/portada.jpg	Portada - Zaragocilla Campus de la Salud	1	2026-09-07 23:46:52.00814	ACTIVA
-5	5	7	https://zxgrpzbunghncopuhiea.supabase.co/storage/v1/object/public/campus/5/portada.jpeg	Portada - Claustro de La Merced	1	2026-09-07 23:46:52.00814	ACTIVA
+1	1	7	/campus/1/portada.jpeg	Portada - Claustro de San Agustín	1	2026-09-07 23:46:52.00814	ACTIVA
+2	2	7	/campus/2/portada.jpg	Portada - Piedra de Bolívar	1	2026-09-07 23:46:52.00814	ACTIVA
+3	3	7	/campus/3/portada.jpeg	Portada - Campus de San Pablo	1	2026-09-07 23:46:52.00814	ACTIVA
+4	4	7	/campus/4/portada.jpg	Portada - Zaragocilla Campus de la Salud	1	2026-09-07 23:46:52.00814	ACTIVA
+5	5	7	/campus/5/portada.jpeg	Portada - Claustro de La Merced	1	2026-09-07 23:46:52.00814	ACTIVA
 \.
 
 
