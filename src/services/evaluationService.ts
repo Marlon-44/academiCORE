@@ -30,7 +30,7 @@ interface StudentEvaluationDTO {
 }
 
 const API_BASE_URL =
-    "http://localhost:8080/api/v1/evaluacion-docente";
+    "/api/v1/evaluacion-docente";
 
 async function get<T>(path: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${path}`, {
