@@ -44,7 +44,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-academicore}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-academicore_dev}
       SPRING_PROFILES_ACTIVE: docker
-      SUPABASE_URL: ${SUPABASE_URL:-https://pxfitbmwillrxxbjlhjv.supabase.co}
+      SUPABASE_URL: ${SUPABASE_URL:-https://zxgrpzbunghncopuhiea.supabase.co}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
       SENTIMENT_SERVICE_URL: http://sentiment:5000
     ports:

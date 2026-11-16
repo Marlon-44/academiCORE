@@ -15,7 +15,7 @@ Vercel (frontend) ──HTTPS──> Render (backend) ──> Supabase (Postgres
 3. Importar el dump con el dataset mínimo:
 
    ```bash
-   psql "postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres" \
+   psql "postgresql://postgres.<ref>:<password>@aws-1-<region>.pooler.supabase.com:5432/postgres" \
         -f db/init/01_academicore.sql
    ```
 
@@ -33,7 +33,7 @@ Variables a rellenar (las marcadas `sync: false`):
 
 | Variable | Valor |
 |---|---|
-| `DB_URL` | `jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require` |
+| `DB_URL` | `jdbc:postgresql://aws-1-<region>.pooler.supabase.com:5432/postgres?sslmode=require` |
 | `DB_USER` | `postgres.<ref>` |
 | `DB_PASSWORD` | password de la BD |
 | `SUPABASE_URL` | `https://<ref>.supabase.co` |
