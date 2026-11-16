@@ -23,7 +23,9 @@ evaluaciones por grupo, encuestas con análisis de sentimiento y reportes/gráfi
 ## 1. Autenticación y usuarios
 
 La sesión viaja en la cookie HttpOnly `academicore_session`
-(token SecureRandom de 32 bytes, SameSite=Lax).
+(token SecureRandom de 32 bytes). SameSite/Secure configurables por
+entorno (`COOKIE_SAMESITE`, `COOKIE_SECURE`): `Lax` en local,
+`None`+`Secure` en el deploy dividido Vercel→Render (ver DEPLOY.md).
 **Duración por rol:** ADMIN/DOCENTE = **15 días** · ESTUDIANTE = **60 días**.
 El frontend debe enviar `credentials: "include"` en cada `fetch` y el CORS
 ya está configurado con `allowCredentials` para `:3000`, `:3002` y `:5173`.
@@ -32,16 +34,17 @@ ya está configurado con `allowCredentials` para `:3000`, `:3002` y `:5173`.
 
 | Rol | Usuario | Contraseña | Qué ve al entrar |
 |---|---|---|---|
-| `ADMIN` | `admin` | `admin123` | Dashboard `/evaluacion-docente` |
-| `ESTUDIANTE` | `0222400001` … `0222400080` (código) | `10000001` … `10000080` (su documento) | Encuestas pendientes o su dashboard |
-| `DOCENTE` | `10301274` `72104567` `73098812` `10304566` `74112233` `10403321` `11024567` `73115544` | mismo número de documento | Dashboard |
+| `ADMIN` | `admin` | `admin123` | Dashboard `/admin-dashboard` |
+| `ESTUDIANTE` | `0222500001` … `0222500006` (código) | `20001001` … `20001006` (su documento) | Encuestas pendientes o su dashboard |
+| `DOCENTE` | `73001001` `73001002` `73001003` `73001004` | mismo número de documento | Dashboard |
 
 **Todos los estudiantes tienen encuestas PENDIENTES** (periodo activo 2026-2):
 
-`0222400001`–`0222400080` → claves `10000001`–`10000080`.
+`0222500001`–`0222500006` → claves `20001001`–`20001006`.
 Cada uno entra con `surveyCompleted: false` → vista de encuesta con
-**8 tarjetas docente-asignatura: 4 ya respondidas + 4 pendientes**,
-más su historial completo de 2026-1 (8 respondidas).
+**6 tarjetas docente-asignatura: 2 ya respondidas + 4 pendientes**
+(las respondidas son las evaluaciones de AITOR MENTA —EP1101— y
+ELMER CURIO —EP2101—, que acumulan 6 respuestas cada una).
 
 ### `POST /api/auth/login`
 
@@ -49,14 +52,14 @@ Autentica credenciales y crea la sesión (la cookie llega en `Set-Cookie`).
 
 **Body:**
 ```json
-{ "username": "0222400041", "password": "10000041" }
+{ "username": "0222500001", "password": "20001001" }
 ```
 
 **Respuesta 200:**
 ```json
 {
   "id": 42,
-  "username": "0222400041",
+  "username": "0222500001",
   "name": "SANTIAGO RODRIGUEZ LOPEZ DIAZ",
   "role": "ESTUDIANTE",
   "estudianteId": 41,
@@ -111,7 +114,7 @@ Elimina la sesión del servidor y expira la cookie. **Respuesta `204`.**
 ```json
 {
   "id": 36,
-  "codigo": "0222400036",
+  "codigo": "0222500003",
   "numeroDocumento": "10000036",
   "sexo": "FEMENINO",
   "nombres": "ISABELLA",
@@ -296,7 +299,7 @@ Registra un estudiante. **Requeridos:** `numeroDocumento`, `nombres`, `apellidos
 
 ```json
 { "numeroDocumento": "10000051", "nombres": "ANDREA", "apellidos": "PEREZ MORA",
-  "codigo": "0222400051", "sexo": "FEMENINO", "email": "aperez51@unicartagena.edu.co",
+  "codigo": "0222500001", "sexo": "FEMENINO", "email": "elsa.pato1@estudiante.unicartagena.edu.co",
   "semestre": 3, "programaId": 1 }
 ```
 **Respuesta 201:** modelo Estudiante completo. **Errores:** `409` documento duplicado.

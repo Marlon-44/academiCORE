@@ -25,3 +25,4 @@ dist-ssr
 
 # Credenciales locales (Supabase, BD) - no subir al repo
 .env
+scripts/_*.sql

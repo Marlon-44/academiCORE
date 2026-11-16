@@ -29,8 +29,9 @@ interface StudentEvaluationDTO {
     encuestaId: number | null;
 }
 
-const API_BASE_URL =
-    "/api/v1/evaluacion-docente";
+import { API_URL } from "../config/api";
+
+const API_BASE_URL = `${API_URL}/api/v1/evaluacion-docente`;
 
 async function get<T>(path: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${path}`, {

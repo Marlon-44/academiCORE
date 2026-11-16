@@ -1,4 +1,6 @@
-const API_BASE_URL = "/api/auth";
+import { API_URL } from "../config/api";
+
+const API_BASE_URL = `${API_URL}/api/auth`;
 
 // ============================================================
 // Tipos — espejo de UsuarioAutenticadoResponse del backend
