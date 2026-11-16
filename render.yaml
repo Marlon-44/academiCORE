@@ -27,6 +27,8 @@ services:
         sync: false
       - key: CORS_ALLOWED_ORIGINS
         sync: false          # https://<app>.vercel.app
+      - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+        value: "5"           # pooler gratis de Supabase: 15 conexiones totales
       - key: COOKIE_SAMESITE
         value: None          # cookie cross-site Vercel→Render
       - key: COOKIE_SECURE
