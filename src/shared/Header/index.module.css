@@ -55,11 +55,7 @@
     margin: 0;
 }
 
-.headerLink {
-    text-decoration: none;
-    color: var(--font-color-dark);
 
-}
 
 .headerLink {
     position: relative;
@@ -68,6 +64,11 @@
     font-weight: 500;
     padding-bottom: 4px;
     transition: color 0.3s ease;
+    font-size: 1rem;
+    border:none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
 }
 
 .headerLink::after {

@@ -1,0 +1,80 @@
+/* =========================
+   WELCOME HERO
+========================= */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 215px;
+    display: flex;
+    align-items: center;
+    padding: 32px 36px;
+    border-radius: 18px;
+    color: white;
+    background:
+        radial-gradient(circle at 95% 5%,
+            rgba(255, 255, 255, 0.2),
+            transparent 10%),
+        linear-gradient(120deg, var(--uc-teal) 0%, var(--uc-teal) 100%);
+    
+}
+
+.heroContent {
+    position: relative;
+    z-index: 1;
+    max-width: 540px;
+}
+
+.heroEyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+}
+
+.hero h1 {
+    margin: 0 0 12px;
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.hero p {
+    max-width: 470px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    line-height: 1.7;
+    width: 100%;
+}
+
+.hero .logo{
+    position: absolute;
+    right: 35px;
+    width: 190px;
+    height: 190px;
+}
+.heroPeriod {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 21px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.23);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 11px;
+}
+
+.heroDecoration {
+    position: absolute;
+    right: 35px;
+    bottom: -25px;
+    width: 190px;
+    height: 190px;
+    color: rgba(255, 255, 255, 0.12);
+}
