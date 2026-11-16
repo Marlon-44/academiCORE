@@ -71,9 +71,26 @@ docker compose --profile localdb up -d --build
 | Servicio | URL |
 |---|---|
 | Front | http://localhost:3002 |
-| Backend | http://localhost:8080 (Swagger `/swagger-ui.html`) |
-| Health | http://localhost:8080/api/health |
+| Backend | http://localhost:8081 (Swagger `/swagger-ui.html`) |
+| Health | http://localhost:8081/api/health |
 | Sentiment | http://localhost:5000/salud |
+
+### Front local contra Render (sin backend local)
+
+En `.env` definir `VITE_API_URL=https://academicore-api.onrender.com` y
+recompilar el contenedor: el front queda igual que en Vercel (splash hace
+ping hasta que Render despierta y las llamadas van directo al backend
+remoto; la cookie cross-site `SameSite=None; Secure` funciona en
+`http://localhost`). Requiere `http://localhost:3002` en
+`CORS_ALLOWED_ORIGINS` de Render.
+
+```bash
+docker compose build frontend && docker compose up -d frontend
+```
+
+El contenedor `backend` local no es necesario en este modo (puede pararse
+con `docker stop academicore-backend`). Dejando `VITE_API_URL` vacío el
+front vuelve a usar el backend local vía nginx.
 
 ## Credenciales demo
 

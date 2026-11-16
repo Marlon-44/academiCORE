@@ -7,6 +7,11 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
+
+# Backend remoto (Render). Vacio = rutas relativas /api via nginx (backend local).
+ARG VITE_API_URL=""
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 # ─── Stage 2: Runtime ───
