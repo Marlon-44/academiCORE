@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -31,6 +32,17 @@ public class AuthController {
 
     private final AuthUseCase authUseCase;
 
+    /**
+     * Despliegue dividido (front Vercel → API Render): la cookie debe viajar
+     * cross-site, lo que exige SameSite=None + Secure (HTTPS).
+     * En local queda Lax + Secure=false (ver application.yml).
+     */
+    @Value("${app.session-cookie.same-site:Lax}")
+    private String cookieSameSite;
+
+    @Value("${app.session-cookie.secure:false}")
+    private boolean cookieSecure;
+
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión",
             description = "Valida las credenciales y crea una sesión enviada como cookie HttpOnly 'academicore_session'. "
@@ -48,7 +60,8 @@ public class AuthController {
                 .path("/")
                 .maxAge(java.time.Duration.between(
                         result.sesion().getCreadoEn(), result.sesion().getExpiraEn()))
-                .sameSite("Lax")
+                .sameSite(cookieSameSite)
+                .secure(cookieSecure)
                 .build();
 
         return ResponseEntity.ok()
@@ -76,7 +89,8 @@ public class AuthController {
                 .httpOnly(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite(cookieSameSite)
+                .secure(cookieSecure)
                 .build();
 
         return ResponseEntity.noContent()

@@ -26,10 +26,10 @@ sin el Postgres local: `docker compose up -d`. Para volver al Postgres local:
 
 - `docker-compose.yml` monta esta carpeta en `/docker-entrypoint-initdb.d`.
 - Al primer `docker compose up -d` (volumen `pgdata` vacío), Postgres ejecuta
-  el archivo y la BD arranca con todo: 80 estudiantes, 8 docentes, 12
-  asignaturas, 16 evaluaciones (2026-1 cerradas + 2026-2 abiertas),
-  1280 inscripciones y 960 encuestas respondidas (por estudiante: 8 de
-  2026-1, y 4 resueltas + 4 pendientes de 2026-2).
+  el archivo y la BD arranca con todo: 6 estudiantes, 4 docentes, 6
+  asignaturas, 6 evaluaciones ABIERTA 2026-2, 36 inscripciones y 12
+  encuestas respondidas (2 por estudiante, en los mismos 2 docentes con
+  6 respuestas c/u), 21 preguntas SIG activas + 5 inactivas.
 - Como el dump incluye `flyway_schema_history`, el backend no vuelve a correr
   migraciones ya aplicadas — solo las nuevas que existan.
 

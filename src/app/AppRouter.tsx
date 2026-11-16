@@ -18,9 +18,11 @@ import { EvaluacionDocente } from "../pages/EvaluacionDocente";
 
 import { AdminDashboard } from "../pages/AdminDashboard";
 import { StudentPerceptionView } from "../pages/AdminDashboard/views/StudentPerceptionView";
+import { BackendGate } from "../shared/BackendGate";
 
 export const AppRouter = () => {
     return (
+        <BackendGate>
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
@@ -80,5 +82,6 @@ export const AppRouter = () => {
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
+        </BackendGate>
     );
 };

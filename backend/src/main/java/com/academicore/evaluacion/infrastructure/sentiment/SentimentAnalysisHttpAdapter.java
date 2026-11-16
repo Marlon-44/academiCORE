@@ -22,6 +22,10 @@ public class SentimentAnalysisHttpAdapter implements SentimentAnalysisPort {
 
     public SentimentAnalysisHttpAdapter(
             @Value("${sentimiento.service-url:http://localhost:5000}") String baseUrl) {
+        // Render fromService entrega "host:puerto" sin esquema
+        if (!baseUrl.startsWith("http")) {
+            baseUrl = "http://" + baseUrl;
+        }
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(3000);
         factory.setReadTimeout(5000);
