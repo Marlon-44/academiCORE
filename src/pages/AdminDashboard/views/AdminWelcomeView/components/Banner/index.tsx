@@ -1,22 +1,37 @@
 import { CalendarDays } from "lucide-react";
 import styles from "./index.module.css";
 import type { Admin } from "../../../../types";
+import { useEffect, useRef, useState } from "react";
 
-export const Banner = ({admin}: {admin: Admin}) => {
+export const Banner = ({ admin }: { admin: Admin }) => {
     const getGreeting = () => {
-    const hour = new Date().getHours();
+        const hour = new Date().getHours();
 
-    if (hour < 12) return "Buenos días";
-    if (hour < 18) return "Buenas tardes";
-    return "Buenas noches";
-};
+        if (hour < 12) return "Buenos días";
+        if (hour < 18) return "Buenas tardes";
+        return "Buenas noches";
+    };
+    const heroRef = useRef<HTMLElement>(null);
+    const [showLogo, setShowLogo] = useState(true);
+
+    useEffect(() => {
+        const hero = heroRef.current;
+
+        if (!hero) return;
+
+        const observer = new ResizeObserver(([entry]) => {
+            setShowLogo(entry.contentRect.width >= 600);
+        });
+
+        observer.observe(hero);
+
+        return () => observer.disconnect();
+    }, []);
     return (
-        <section className={styles.hero}>
+        <section className={styles.hero} ref={heroRef}>
             <div className={styles.heroContent}>
-                
-
                 <h1>
-                    {getGreeting()}, {admin.name.split(" ")[0] }👋.
+                    {getGreeting()}, {admin.name.split(" ")[0]} 👋.
                 </h1>
 
                 <p>
@@ -30,8 +45,14 @@ export const Banner = ({admin}: {admin: Admin}) => {
                     Periodo académico {admin.academicPeriod}
                 </div>
             </div>
-            <img src="/assets/logoWhiteUDC.png" alt="" className={styles.logo} />
-            
+
+            {showLogo && (
+                <img
+                    src="/assets/logoWhiteUDC.png"
+                    alt=""
+                    className={styles.logo}
+                />
+            )}
         </section>
     )
 

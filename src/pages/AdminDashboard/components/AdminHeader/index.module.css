@@ -6,7 +6,6 @@
     min-height: 76px;
     padding: 0 30px;
     background: var(--backgroundGray);
-    border-bottom: 1px solid #e9e7ee;
     gap: 20px;
 }
 
@@ -215,6 +214,172 @@
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
+}
+.profileContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.profileButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.profilePicture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.2s ease;
+}
+
+.profileButton:hover .profilePicture {
+    transform: scale(1.08);
+}
+
+.profileDropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 190px;
+    padding: 7px;
+    background: white;
+    border: 1px solid #e9e9ee;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s ease;
+}
+
+/* Mostrar al pasar el mouse o navegar con teclado */
+.profileContainer:hover .profileDropdown,
+.profileContainer:focus-within .profileDropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.dropdownItem {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #424252;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdownItem:hover {
+    background: #f3f1f8;
+    color: var(--uc-blue-dark);
+}
+
+.dropdownDivider {
+    height: 1px;
+    background: #eeeeF2;
+    margin: 5px 4px;
+}
+
+.logoutItem {
+    color: #e04450;
+}
+
+.logoutItem:hover {
+    background: #fff0f1;
+    color: #d32f3c;
+}
+.profileToast {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    min-width: 300px;
+    max-width: 400px;
+    padding: 16px 18px;
+
+    background: white;
+    color: #333344;
+    border: 1px solid #e9e5f0;
+    border-left: 4px solid var(--uc-teal);
+    border-radius: 12px;
+
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+
+    animation: toastEnter 0.3s ease;
+}
+
+.profileToast > svg {
+    flex-shrink: 0;
+    color: var(--uc-teal);
+}
+
+.profileToast strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.profileToast p {
+    margin: 0;
+    color: #777786;
+    font-size: 12px;
+}
+
+.profileToast button {
+    margin-left: auto;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    color: #888;
+    cursor: pointer;
+}
+
+@keyframes toastEnter {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .profileToast {
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+        min-width: unset;
+    }
 }
 
 @keyframes dropdownAppear {

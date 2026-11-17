@@ -8,6 +8,9 @@ import {
     ChevronRight,
     X,
     Home,
+    Info,
+    LogOut,
+    UserRound,
 } from "lucide-react";
 
 import {
@@ -17,6 +20,7 @@ import {
 } from "../../config/adminNavigation";
 
 import styles from "./index.module.css";
+import { useAuth } from "../../../../auth/AuthContext";
 
 interface SearchResult {
     item: AdminMenuItem;
@@ -65,6 +69,10 @@ function getAdminSearchResults(
 }
 
 export function AdminHeader() {
+
+    const [showProfileNotice, setShowProfileNotice] = useState(false);
+    const { logout } = useAuth();
+
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -92,6 +100,23 @@ export function AdminHeader() {
             searchValue.trim()
         )
         : [];
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        }
+    };
+    useEffect(() => {
+        if (!showProfileNotice) return;
+
+        const timer = setTimeout(() => {
+            setShowProfileNotice(false);
+        }, 3500);
+
+        return () => clearTimeout(timer);
+    }, [showProfileNotice]);
 
     const handleCloseSearch = () => {
         setSearchOpen(false);
@@ -308,19 +333,61 @@ export function AdminHeader() {
                 </button>
 
                 {/* Perfil */}
-                <button
-                    type="button"
-                    className={styles.profileButton}
-                    aria-label="Perfil del administrador"
-                    title="Perfil"
-                >
-                    <img
-                        src="https://i.pinimg.com/1200x/44/b8/04/44b80477d8b5b2f71654f1816b7fe50b.jpg"
-                        alt="Foto de perfil del administrador"
-                        className={styles.profilePicture}
-                    />
-                </button>
+                {/* Perfil del administrador */}
+                <div className={styles.profileContainer}>
+                    <button
+                        type="button"
+                        className={styles.profileButton}
+                        aria-label="Perfil del administrador"
+                        title="Perfil"
+                    >
+                        <img
+                            src="https://i.pinimg.com/1200x/44/b8/04/44b80477d8b5b2f71654f1816b7fe50b.jpg"
+                            alt="Foto de perfil del administrador"
+                            className={styles.profilePicture}
+                        />
+                    </button>
+
+                    <div className={styles.profileDropdown}>
+                        <button
+                            type="button"
+                            onClick={() => setShowProfileNotice(true)}
+                            className={styles.dropdownItem}
+                        >
+                            <UserRound size={17} />
+                            <span>Ver perfil</span>
+                        </button>
+
+                        <div className={styles.dropdownDivider} />
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className={`${styles.dropdownItem} ${styles.logoutItem}`}
+                        >
+                            <LogOut size={17} />
+                            <span>Cerrar sesión</span>
+                        </button>
+                    </div>
+                </div>
             </div>
+            {showProfileNotice && (
+                <div className={styles.profileToast}>
+                    <Info size={19} />
+                    <div>
+                        <strong>Vista en desarrollo</strong>
+                        <p>Esta sección estará disponible próximamente.</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => setShowProfileNotice(false)}
+                        aria-label="Cerrar notificación"
+                    >
+                        <X size={17} />
+                    </button>
+                </div>
+            )}
         </header>
     );
 }

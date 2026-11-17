@@ -1,0 +1,144 @@
+
+/* ============ Hero ============ */
+
+.hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.heroKicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(75, 49, 122, 0.09);
+    color: var(--uc-blue-dark);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.hero h1 {
+    margin: 14px 0 8px;
+    color: var(--uc-blue-dark);
+    font-size: 2.1rem;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+}
+
+.hero p {
+    margin: 0;
+    max-width: 560px;
+    color: var(--font-color-light, #7c7c7c);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    width: 100%;
+}
+.docentePicker {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.docenteSearch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid #dcdce5;
+    border-radius: 10px;
+    background: white;
+    color: #777;
+    transition: border-color 0.2s;
+    width: 50%;
+}
+
+.docenteSearch:focus-within {
+    border-color: #5e67e6;
+}
+
+.docenteSearch input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: #333;
+}
+
+.docenteGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.docenteCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 18px 12px;
+    border: 1px solid #e1e1e9;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 200px;
+}
+
+.docenteCard:hover {
+    border-color: #5e67e6;
+    transform: translateY(-2px);
+}
+
+.docenteCardSelected {
+    background: var(--uc-blue-dark);
+    color: white;
+}
+
+.docenteAvatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #eeeefe;
+    color: #5e67e6;
+}
+
+.docenteNombre {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.docenteCheck {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #5e67e6;
+    font-weight: 600;
+}
+
+.docenteHint {
+    font-size: 12px;
+    color: #777;
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .docenteGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

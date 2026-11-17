@@ -9,6 +9,7 @@ import {
     ChevronRight,
     Lock,
     LockOpen,
+    
 } from "lucide-react";
 
 import { useAuth } from "../../../../auth/AuthContext";
@@ -32,7 +33,7 @@ export function AdminAside({ onExpandedChange }: AdminAsideProps) {
 
     const isExpanded = isPinned || isHovered;
 
-    const [openMenu, setOpenMenu] = useState<string | null>("percepcion");
+    const [openMenu, setOpenMenu] = useState<string | null>();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [loggingOut, setLoggingOut] = useState(false);
     const [mockMessage, setMockMessage] = useState("");
@@ -146,7 +147,6 @@ export function AdminAside({ onExpandedChange }: AdminAsideProps) {
                     </span>
 
                     {adminNavigation.map((item) => {
-                        {/*const Icon = item.icon;*/}
                         const isOpen = openMenu === item.id;
 
                         return (
@@ -162,7 +162,7 @@ export function AdminAside({ onExpandedChange }: AdminAsideProps) {
                                     title={!isExpanded ? item.label : undefined}
                                     aria-isExpanded={isOpen}
                                 >
-                                    {/*<Icon size={20} />*/}
+                                    {item.icon && <item.icon size={20} />}
 
                                     {isExpanded && (
                                         <>
