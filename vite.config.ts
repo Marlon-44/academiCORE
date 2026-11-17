@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // En dev local, /api → backend Spring (docker :8080 o local).
+      // En dev local, /api → backend Spring (docker expone :8081 en el host).
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8081',
         changeOrigin: true,
       },
     },

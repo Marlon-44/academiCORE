@@ -16,7 +16,9 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: DB_URL
-        sync: false          # jdbc:postgresql://<pooler>:5432/postgres?sslmode=require
+        sync: false          # jdbc:postgresql://<pooler>:6543/postgres?sslmode=require&prepareThreshold=0
+      - key: FLYWAY_DB_URL
+        sync: false          # jdbc:postgresql://<pooler>:5432/postgres?sslmode=require (sesion)
       - key: DB_USER
         sync: false          # postgres.<project-ref>
       - key: DB_PASSWORD

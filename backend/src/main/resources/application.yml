@@ -22,6 +22,11 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    # Pooler de SESION (:5432) para Flyway: los advisory locks no sobreviven
+    # en modo transaccion. Si no se define, usa la misma URL del datasource.
+    url: ${FLYWAY_DB_URL:${DB_URL:jdbc:postgresql://localhost:5432/academicore}}
+    user: ${FLYWAY_DB_USER:${DB_USER:academicore}}
+    password: ${FLYWAY_DB_PASSWORD:${DB_PASSWORD:academicore_dev}}
 
 server:
   port: ${PORT:8080}

@@ -43,6 +43,10 @@ services:
       SPRING_DATASOURCE_URL: ${DB_URL:-jdbc:postgresql://postgres:5432/academicore}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-academicore}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-academicore_dev}
+      # Flyway por pooler de sesion (:5432); la app puede ir por :6543
+      SPRING_FLYWAY_URL: ${FLYWAY_DB_URL:-${DB_URL:-jdbc:postgresql://postgres:5432/academicore}}
+      SPRING_FLYWAY_USER: ${FLYWAY_DB_USER:-${DB_USER:-academicore}}
+      SPRING_FLYWAY_PASSWORD: ${FLYWAY_DB_PASSWORD:-${DB_PASSWORD:-academicore_dev}}
       SPRING_PROFILES_ACTIVE: docker
       SUPABASE_URL: ${SUPABASE_URL:-https://zxgrpzbunghncopuhiea.supabase.co}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
