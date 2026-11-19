@@ -30,6 +30,8 @@ public class ReporteDocentePdfUseCase {
     public byte[] generarPdf(Long docenteId, Long asignaturaId) {
         DocenteGraficasResponse graficas = graficasUseCase.graficasDocente(docenteId, asignaturaId);
         DocenteReporteResponse reporte = graficasUseCase.reporteDocente(docenteId, asignaturaId);
+        reescalar(graficas);
+        reescalar(reporte);
         ResumenDocentePort motor = geminiAdapter.habilitado() ? geminiAdapter : templateAdapter;
         String resumen = motor.generar(graficas, reporte);
         if (resumen == null) {
@@ -37,6 +39,43 @@ public class ReporteDocentePdfUseCase {
             resumen = templateAdapter.generar(graficas, reporte);
         }
         return pdfRenderer.render(graficas, reporte, resumen, motor.nombre(), asignaturaId);
+    }
+
+    /* ---------- promedios expresados en escala colombiana 0-5 ---------- */
+
+    /** Convierte un promedio Likert 1-4 a escala 0-5: (v-1)*5/3. */
+    private static Double a05(Double v) {
+        return v == null ? null : Math.max(0, Math.min(5, (v - 1) * 5.0 / 3.0));
+    }
+
+    private static void reescalar(com.academicore.evaluacion.application.dto.ChartSerie s) {
+        if (s == null || s.getValores() == null) return;
+        s.setValores(s.getValores().stream().map(ReporteDocentePdfUseCase::a05).toList());
+    }
+
+    private void reescalar(DocenteGraficasResponse g) {
+        if (g == null) return;
+        g.setPromedioGeneral(a05(g.getPromedioGeneral()));
+        reescalar(g.getRadarCategorias());
+        reescalar(g.getEvolucionPeriodos());
+        if (g.getComparativoMaterias() != null) {
+            g.getComparativoMaterias().forEach(i -> i.setPromedio(a05(i.getPromedio())));
+        }
+        if (g.getFortalezas() != null) {
+            g.getFortalezas().forEach(i -> i.setPromedio(a05(i.getPromedio())));
+        }
+        if (g.getOportunidades() != null) {
+            g.getOportunidades().forEach(i -> i.setPromedio(a05(i.getPromedio())));
+        }
+        // sentimientos = conteos (no se reescalan); promedioSentimiento = score -1..1
+    }
+
+    private void reescalar(DocenteReporteResponse r) {
+        if (r == null) return;
+        r.setPromedioGeneral(a05(r.getPromedioGeneral()));
+        if (r.getEvaluaciones() != null) {
+            r.getEvaluaciones().forEach(e -> e.setPromedio(a05(e.getPromedio())));
+        }
     }
 
     public String nombreArchivo(Long docenteId, Long asignaturaId, String docenteNombre) {

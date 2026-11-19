@@ -90,13 +90,13 @@ public class GeminiResumenAdapter implements ResumenDocentePort {
     private String prompt(DocenteGraficasResponse g, DocenteReporteResponse r) {
         StringBuilder sb = new StringBuilder();
         sb.append("Eres un analista academico. Redacta en espanol un resumen ejecutivo del reporte de ")
-          .append("evaluacion docente (percepcion estudiantil, escala Likert 1-4) del docente ")
+          .append("evaluacion docente (percepcion estudiantil, promedios en escala 0 a 5) del docente ")
           .append(g.getDocenteNombre()).append(".\n")
           .append("Estructura exacta, cada seccion en un parrafo iniciando con su titulo en mayusculas:\n")
           .append("PANORAMA GENERAL, FORTALEZAS, AREAS DE MEJORA, SENTIMIENTO EN LOS COMENTARIOS, ")
           .append("RECOMENDACION.\n")
           .append("Datos: promedio general ").append(String.format("%.2f", g.getPromedioGeneral() == null ? 0 : g.getPromedioGeneral()))
-          .append("/4, valoracion ").append(g.getValoracion()).append(", ")
+          .append("/5, valoracion ").append(g.getValoracion()).append(", ")
           .append(g.getTotalEncuestas()).append(" encuestas.\n");
         if (g.getRadarCategorias() != null) {
             sb.append("Promedio por categoria: ").append(union(g.getRadarCategorias().getLabels(),

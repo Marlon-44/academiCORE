@@ -268,6 +268,10 @@ public class GraficasUseCase {
             }
         }
         List<DocenteGraficasResponse.PreguntaRanking> ranking = acumPorPregunta.entrySet().stream()
+                .filter(entry -> {
+                    PreguntaEvaluacion p = preguntas.get(entry.getKey());
+                    return p != null && p.getTipo() == TipoPregunta.LIKERT;
+                })
                 .map(entry -> {
                     PreguntaEvaluacion p = preguntas.get(entry.getKey());
                     return DocenteGraficasResponse.PreguntaRanking.builder()
