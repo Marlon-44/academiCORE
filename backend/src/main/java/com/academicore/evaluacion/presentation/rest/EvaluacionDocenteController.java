@@ -25,6 +25,7 @@ import com.academicore.evaluacion.application.usecase.EncuestaUseCase;
 import com.academicore.evaluacion.application.usecase.EstudianteUseCase;
 import com.academicore.evaluacion.application.usecase.EvaluacionDocenteUseCase;
 import com.academicore.evaluacion.application.usecase.GraficasUseCase;
+import com.academicore.evaluacion.application.usecase.ReporteDocentePdfUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +52,7 @@ public class EvaluacionDocenteController {
     private final EncuestaUseCase encuestaUseCase;
     private final GraficasUseCase graficasUseCase;
     private final EstudianteUseCase estudianteUseCase;
+    private final ReporteDocentePdfUseCase pdfUseCase;
 
     // ============================================================
     // Docentes
@@ -104,6 +106,23 @@ public class EvaluacionDocenteController {
             @Parameter(description = "Limitar a una asignatura específica")
             @RequestParam(required = false) Long asignaturaId) {
         return ResponseEntity.ok(graficasUseCase.reporteDocente(id, asignaturaId));
+    }
+
+    @GetMapping(value = "/docentes/{id}/reporte/pdf", produces = "application/pdf")
+    @Operation(summary = "Descarga el reporte del docente en PDF: resumen ejecutivo "
+            + "(IA), KPIs, gráficas por categoría y sentimiento, comparativo por "
+            + "evaluación, fortalezas/oportunidades y comentarios. "
+            + "Sin ?asignaturaId genera el consolidado de todas sus materias")
+    public ResponseEntity<byte[]> reporteDocentePdf(
+            @PathVariable Long id,
+            @Parameter(description = "Limitar a una asignatura específica")
+            @RequestParam(required = false) Long asignaturaId) {
+        DocenteGraficasResponse g = graficasUseCase.graficasDocente(id, asignaturaId);
+        byte[] pdf = pdfUseCase.generarPdf(id, asignaturaId);
+        String nombre = pdfUseCase.nombreArchivo(id, asignaturaId, g.getDocenteNombre());
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + nombre + "\"")
+                .body(pdf);
     }
 
     // ============================================================

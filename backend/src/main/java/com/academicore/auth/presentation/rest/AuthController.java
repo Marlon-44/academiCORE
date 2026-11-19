@@ -98,6 +98,13 @@ public class AuthController {
                 .build();
     }
 
+    @GetMapping("/usuarios")
+    @Operation(summary = "Listar todos los usuarios",
+            description = "Devuelve id, username, nombre, rol e ids de estudiante/docente de cada usuario")
+    public ResponseEntity<java.util.List<UsuarioAutenticadoResponse>> listarUsuarios() {
+        return ResponseEntity.ok(authUseCase.listarUsuarios());
+    }
+
     private String extraerToken(HttpServletRequest request) {
         if (request.getCookies() == null) {
             return null;

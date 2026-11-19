@@ -56,3 +56,9 @@ springdoc:
 
 sentimiento:
   service-url: ${SENTIMENT_SERVICE_URL:http://localhost:5000}
+
+# Resumen del reporte docente. Si GEMINI_API_KEY esta definida se usa
+# Gemini (free tier ~1500 req/dia); si no, el generador local en espanol.
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  model: ${GEMINI_MODEL:gemini-2.0-flash}

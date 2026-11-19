@@ -7,6 +7,7 @@ import com.academicore.auth.infrastructure.persistence.repository.UsuarioJpaRepo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -18,6 +19,11 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
     @Override
     public Usuario save(Usuario usuario) {
         return AuthMapper.toDomain(jpaRepository.save(AuthMapper.toEntity(usuario)));
+    }
+
+    @Override
+    public List<Usuario> findAll() {
+        return jpaRepository.findAll().stream().map(AuthMapper::toDomain).toList();
     }
 
     @Override

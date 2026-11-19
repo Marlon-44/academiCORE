@@ -50,6 +50,13 @@ public class AuthUseCase {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<UsuarioAutenticadoResponse> listarUsuarios() {
+        return usuarioRepository.findAll().stream()
+                .map(u -> UsuarioAutenticadoResponse.of(u, false))
+                .toList();
+    }
+
     @Transactional
     public void logout(String token) {
         if (token != null && !token.isBlank()) {

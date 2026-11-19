@@ -2,11 +2,14 @@ package com.academicore.auth.domain.repository;
 
 import com.academicore.auth.domain.model.Usuario;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioRepository {
 
     Usuario save(Usuario usuario);
+
+    List<Usuario> findAll();
 
     Optional<Usuario> findById(Long id);
 
